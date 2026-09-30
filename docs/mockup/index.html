@@ -1,0 +1,1300 @@
+<!doctype html>
+<html lang="he" dir="rtl" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SiteIt 2nd Brain</title>
+<meta name="description" content="מוקאפ מסכים למוח הארגוני של סייט איט">
+<link rel="icon" href="assets/mark-128.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://unpkg.com/rough-notation@0.5.1/lib/rough-notation.iife.js"></script>
+<style>
+/* ============ Tokens ============
+   צורות: כרטיסים 24px, שדות 16px, כל מה שלוחצים עליו (כפתורים, צ'יפים) גלולה מלאה.
+   צבעים: שזיף מהלוגו = צבע ראשי. ארבעת צבעי הלוגו = סוג מקור בלבד, לא קישוט. */
+:root{
+  --plum-950:#150A28; --plum-900:#1E1036; --plum:#311C57; --plum-700:#452A73; --plum-500:#6B4FA0; --plum-300:#B6A6D6; --plum-100:#EDE7F7; --plum-50:#F7F4FB;
+  --green:#1AD689; --pink:#F1086A; --yellow:#FDD509; --cyan:#01B3FD;
+  --bg:#F5F2FA; --surface:#FFFFFF; --surface-2:#FAF8FD; --ink:#1E1036; --ink-2:#463A60; --ink-3:#6A5E84; --line:#E4DDF0; --line-2:#D5CBE7;
+  --accent:var(--plum); --on-accent:#FFFFFF;
+  --shadow:0 1px 2px rgb(49 28 87 / .06), 0 12px 32px -12px rgb(49 28 87 / .18);
+  --shadow-lg:0 2px 4px rgb(49 28 87 / .06), 0 30px 70px -20px rgb(49 28 87 / .35);
+  --r-card:24px; --r-field:16px;
+  --ease-out:cubic-bezier(.23,1,.32,1); --ease-io:cubic-bezier(.77,0,.175,1); --ease-drawer:cubic-bezier(.32,.72,0,1);
+  --side:288px;
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --bg:#110822; --surface:#1B1033; --surface-2:#221541; --ink:#F5F2FB; --ink-2:#D3CAE6; --ink-3:#AFA3C9; --line:#31245A; --line-2:#40316E;
+  --accent:#B79CFF; --on-accent:#150A28;
+  --shadow:0 1px 2px rgb(0 0 0 / .3), 0 14px 36px -14px rgb(0 0 0 / .6);
+  --shadow-lg:0 2px 4px rgb(0 0 0 / .3), 0 34px 80px -24px rgb(0 0 0 / .75);
+  color-scheme:dark;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{font-family:"Rubik",system-ui,sans-serif;font-size:17px;line-height:1.55;color:var(--ink);background:var(--bg);min-height:100dvh;-webkit-font-smoothing:antialiased;transition:background-color .3s ease,color .3s ease}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none;-webkit-tap-highlight-color:transparent}
+img{display:block;max-width:100%}
+.ph,.ph-fill,.ph-bold,.ph-duotone{line-height:1}
+:focus-visible{outline:3px solid color-mix(in srgb,var(--accent) 70%,transparent);outline-offset:3px;border-radius:12px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.num{font-variant-numeric:tabular-nums}
+.ltr{direction:ltr;unicode-bidi:isolate}
+
+/* source color system */
+[data-src="wa"]{--c:var(--green);--on:#06331F}
+[data-src="meet"]{--c:var(--cyan);--on:#032E42}
+[data-src="doc"]{--c:var(--yellow);--on:#3A2F00}
+[data-src="dec"]{--c:var(--pink);--on:#FFFFFF}
+[data-src="brain"]{--c:var(--plum);--on:#FFFFFF}
+[data-src="mail"]{--c:#EA4335;--on:#FFFFFF}
+.sq{flex:none;display:grid;place-items:center;width:44px;height:44px;border-radius:14px;background:var(--c);color:var(--on);font-size:22px}
+.sq.sm{width:34px;height:34px;border-radius:11px;font-size:18px}
+.sq.lg{width:56px;height:56px;border-radius:18px;font-size:28px}
+
+/* ============ Buttons & chips ============ */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;height:52px;padding:0 24px;border-radius:999px;font-weight:600;font-size:17px;white-space:nowrap;transition:transform .16s var(--ease-out),background-color .2s ease,box-shadow .2s ease,color .2s ease}
+.btn:active{transform:scale(.97)}
+.btn i{font-size:21px}
+.btn-primary{background:var(--accent);color:var(--on-accent);box-shadow:0 10px 24px -10px color-mix(in srgb,var(--accent) 80%,transparent)}
+.btn-ghost{background:var(--surface);color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line-2)}
+.btn-soft{background:color-mix(in srgb,var(--accent) 12%,var(--surface));color:var(--ink)}
+.btn-sm{height:42px;padding:0 18px;font-size:15.5px}
+.btn-sm i{font-size:18px}
+@media (hover:hover) and (pointer:fine){
+  .btn-primary:hover{background:color-mix(in srgb,var(--accent) 88%,#fff)}
+  .btn-ghost:hover,.btn-soft:hover{background:color-mix(in srgb,var(--accent) 18%,var(--surface))}
+}
+.chip{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 18px;border-radius:999px;background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--line);font-size:15.5px;font-weight:500;color:var(--ink-2);transition:transform .16s var(--ease-out),background-color .2s ease,box-shadow .2s ease,color .2s ease}
+.chip:active{transform:scale(.97)}
+.chip i{font-size:18px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);box-shadow:none}
+@media (hover:hover) and (pointer:fine){.chip:not([aria-pressed="true"]):hover{box-shadow:inset 0 0 0 1.5px var(--plum-300);color:var(--ink)}}
+.tag{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:999px;font-size:14px;font-weight:600;background:color-mix(in srgb,var(--c,var(--plum)) 16%,var(--surface));color:var(--ink)}
+.tag i{font-size:15px;color:color-mix(in srgb,var(--c,var(--plum)) 70%,var(--ink))}
+.tag.solid{background:var(--c);color:var(--on)}
+.tag.solid i{color:inherit}
+.tag.solid[data-src="dec"],.rec.on{background:#CF0559}
+.tag.outline{background:transparent;box-shadow:inset 0 0 0 1.5px var(--line-2);color:var(--ink-2)}
+
+/* avatars (employees) */
+.av{--c:var(--plum);display:inline-grid;place-items:center;width:36px;height:36px;border-radius:50%;font-size:14px;font-weight:700;background:var(--c);color:#fff;box-shadow:0 0 0 3px var(--surface)}
+.av.gal{--c:#311C57}.av.dani{--c:#CF0559}.av.maya{--c:#08719F}.av.itai{--c:#0E9E63}.av.ben{--c:#C79A00}.av.client{--c:#7C6A9E}
+.avs{display:flex}.avs .av+.av{margin-inline-start:-10px}
+
+/* ============ Cards ============ */
+.card{background:var(--surface);border-radius:var(--r-card);box-shadow:var(--shadow);padding:28px;position:relative}
+.card h2{font-size:21px;font-weight:700;letter-spacing:-.01em;display:flex;align-items:center;gap:12px}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}
+.muted{color:var(--ink-2)}
+.small{font-size:15px}
+
+/* ============ Login ============ */
+.login{min-height:100dvh;display:grid;grid-template-columns:minmax(420px,1fr) 1.15fr}
+.login-copy{display:flex;flex-direction:column;justify-content:center;gap:34px;padding:56px clamp(28px,6vw,96px)}
+.login-copy .logo{width:min(340px,70%);height:auto}
+.login h1{font-size:clamp(38px,4vw,58px);line-height:1.12;font-weight:800;letter-spacing:-.025em;max-width:20ch}
+.login p.lead{font-size:clamp(19px,1.6vw,22px);color:var(--ink-2);max-width:34ch;line-height:1.5}
+.gbtn{height:62px;padding:0 30px;font-size:19px;gap:14px;background:var(--surface);color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line-2),var(--shadow);align-self:flex-start}
+.gbtn img{width:24px;height:24px}
+@media (hover:hover) and (pointer:fine){.gbtn:hover{box-shadow:inset 0 0 0 1.5px var(--plum-300),var(--shadow-lg)}}
+.login-note{display:flex;align-items:center;gap:10px;font-size:15.5px;color:var(--ink-2)}
+.login-note i{font-size:20px;color:var(--accent)}
+.login-art{position:relative;overflow:hidden;background:radial-gradient(120% 90% at 30% 20%,#3B2268 0%,var(--plum-900) 55%,var(--plum-950) 100%);border-radius:40px;margin:14px;min-height:560px}
+.dots{position:absolute;inset:0;--dot:2.6;--dot-color:#3A2A5E;--glow-color:#B79CFF}
+.art-core{position:absolute;left:50%;top:50%;width:min(210px,30%);translate:-50% -50%;filter:drop-shadow(0 30px 60px rgb(0 0 0 / .45))}
+.art-lines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.art-lines path{fill:none;stroke-width:2;stroke-linecap:round;opacity:.85}
+.float{position:absolute;width:min(290px,40%);background:#fff;color:#1E1036;border-radius:20px;padding:16px 18px;box-shadow:0 24px 50px -18px rgb(0 0 0 / .6);display:flex;gap:14px;align-items:flex-start;font-size:15px;line-height:1.45}
+.float b{display:block;font-size:14px;font-weight:700;margin-bottom:3px;color:#1E1036}
+.float span{color:#463A60}
+.f1{top:9%;right:6%}.f2{top:14%;left:6%}.f3{bottom:12%;right:8%}.f4{bottom:9%;left:7%}
+
+/* ============ App shell ============ */
+.app{display:grid;grid-template-columns:var(--side) minmax(0,1fr);min-height:100dvh}
+.side{position:sticky;top:0;height:100dvh;display:flex;flex-direction:column;gap:8px;padding:26px 18px 22px;background:var(--surface);border-inline-end:1px solid var(--line)}
+.side .brand{padding:4px 12px 26px}
+.side .brand img{width:190px;height:auto}
+.nav{display:flex;flex-direction:column;gap:6px}
+.nav a{position:relative;display:flex;align-items:center;gap:14px;height:56px;padding:0 16px;border-radius:18px;text-decoration:none;color:var(--ink-2);font-weight:500;font-size:18px;transition:background-color .2s ease,color .2s ease,transform .16s var(--ease-out)}
+.nav a:active{transform:scale(.98)}
+.nav a i{font-size:25px}
+.nav a[aria-current="page"]{background:color-mix(in srgb,var(--accent) 12%,var(--surface));color:var(--ink);font-weight:700}
+.nav a[aria-current="page"] i{color:var(--accent)}
+.nav a[aria-current="page"]::before{content:"";position:absolute;inset-inline-start:-18px;top:14px;bottom:14px;width:5px;border-radius:0 6px 6px 0;background:var(--accent)}
+:root[dir="rtl"] .nav a[aria-current="page"]::before{border-radius:6px 0 0 6px}
+@media (hover:hover) and (pointer:fine){.nav a:not([aria-current="page"]):hover{background:var(--surface-2);color:var(--ink)}}
+.badge{margin-inline-start:auto;min-width:28px;height:28px;padding:0 8px;border-radius:999px;background:#CF0559;color:#fff;font-size:14px;font-weight:700;display:grid;place-items:center}
+.side-foot{margin-top:auto;display:flex;flex-direction:column;gap:14px}
+.add-btn{height:58px;font-size:18px}
+.me{display:flex;align-items:center;gap:12px;padding:12px;border-radius:18px;background:var(--surface-2)}
+.me .av{width:44px;height:44px;font-size:16px;box-shadow:none}
+.me b{display:block;font-size:16px}
+.me span{font-size:14px;color:var(--ink-2)}
+.icon-btn{display:grid;place-items:center;width:46px;height:46px;border-radius:50%;font-size:22px;color:var(--ink-2);transition:background-color .2s ease,transform .16s var(--ease-out)}
+.icon-btn:active{transform:scale(.94)}
+@media (hover:hover) and (pointer:fine){.icon-btn:hover{background:color-mix(in srgb,var(--accent) 12%,var(--surface));color:var(--ink)}}
+.me .icon-btn{margin-inline-start:auto}
+
+.main{min-width:0;padding:40px clamp(20px,3.6vw,56px) 64px}
+.wrap{max-width:1240px;margin-inline:auto}
+.topbar,.dock{display:none}
+
+.screen[hidden]{display:none!important}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:30px}
+.page-head h1{font-size:clamp(34px,3.4vw,48px);line-height:1.1;font-weight:800;letter-spacing:-.025em}
+.page-head p{font-size:19px;color:var(--ink-2);margin-top:10px;max-width:60ch}
+.kicker{font-size:16px;font-weight:600;color:var(--ink-2);margin-bottom:8px}
+
+/* ============ Today ============ */
+.hl{display:inline-block;position:relative;white-space:nowrap}
+.ask{position:relative;display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:28px;padding:10px 10px 10px 10px;padding-inline-start:26px;box-shadow:var(--shadow-lg),inset 0 0 0 2px transparent;transition:box-shadow .25s ease}
+.ask:focus-within{box-shadow:var(--shadow-lg),inset 0 0 0 2px var(--accent)}
+.ask > i{font-size:30px;color:var(--accent)}
+.ask input{flex:1;min-width:0;border:0;outline:0;background:transparent;font-size:clamp(18px,1.6vw,22px);height:64px;color:var(--ink)}
+.ask input::placeholder{color:var(--ink-3)}
+.mic{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;font-size:26px;background:color-mix(in srgb,var(--accent) 12%,var(--surface));color:var(--accent);transition:transform .16s var(--ease-out),background-color .2s ease}
+.mic:active,.send:active{transform:scale(.94)}
+.send{width:64px;height:64px;border-radius:22px;display:grid;place-items:center;font-size:28px;background:var(--accent);color:var(--on-accent);transition:transform .16s var(--ease-out)}
+.suggest{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0 38px}
+
+.today-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:22px}
+.next{grid-column:span 7;overflow:hidden;background:linear-gradient(160deg,var(--plum) 0%,#23113F 100%);color:#fff}
+:root[data-theme="dark"] .next{background:linear-gradient(160deg,#3A2270 0%,#1D1036 100%)}
+.next .muted{color:#D9CFF0}
+.next h2{font-size:clamp(28px,2.6vw,36px);line-height:1.15;font-weight:800;letter-spacing:-.02em;margin:14px 0 8px}
+.next-meta{display:flex;flex-wrap:wrap;gap:10px 22px;font-size:17px;color:#E9E2F8}
+.next-meta span{display:inline-flex;align-items:center;gap:8px}
+.next-meta i{font-size:21px;color:var(--cyan)}
+.brief-list{list-style:none;display:grid;gap:12px;margin:26px 0 28px}
+.brief-list li{display:flex;gap:12px;align-items:flex-start;font-size:17px;color:#F2EDFB;line-height:1.45}
+.brief-list li i{font-size:22px;flex:none;margin-top:1px}
+.next .btn-primary{background:#fff;color:var(--plum);box-shadow:0 12px 30px -12px rgb(0 0 0 / .5)}
+.next .btn-ghost{background:rgb(255 255 255 / .1);color:#fff;box-shadow:inset 0 0 0 1.5px rgb(255 255 255 / .28)}
+.countdown{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 14px;border-radius:999px;background:var(--cyan);color:#032E42;font-weight:700;font-size:15px}
+.next-glow{position:absolute;inset-inline-end:-80px;top:-80px;width:280px;opacity:.16;rotate:-12deg;pointer-events:none}
+.pending{grid-column:span 5}
+.plist{list-style:none;display:grid;gap:10px}
+.plist li{display:flex;align-items:center;gap:14px;padding:14px;border-radius:18px;background:var(--surface-2);transition:background-color .2s ease}
+.plist li b{display:block;font-size:16.5px;font-weight:600;line-height:1.35}
+.plist li span{font-size:14.5px;color:var(--ink-2)}
+.plist li .go{margin-inline-start:auto;font-size:20px;color:var(--ink-3)}
+@media (hover:hover) and (pointer:fine){.plist li:hover{background:color-mix(in srgb,var(--accent) 9%,var(--surface))}}
+.feed{grid-column:span 7}
+.flist{list-style:none;display:grid}
+.flist li{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;padding:16px 0}
+.flist li+li{border-top:1px solid var(--line)}
+.flist b{font-weight:600}
+.flist .when{font-size:14.5px;color:var(--ink-2);white-space:nowrap}
+.flist p{font-size:16.5px;line-height:1.45}
+.intake{grid-column:span 5}
+.bars{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;align-items:end;height:200px;margin-top:6px;padding:0 4px}
+.bar{display:flex;flex-direction:column-reverse;border-radius:14px;overflow:hidden;height:100%;justify-content:flex-start}
+.bar .seg{background:var(--c);transform-origin:bottom}
+.bar-l{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:10px;font-size:14px;color:var(--ink-2);text-align:center}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:18px;font-size:14.5px;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:8px}
+.legend i{width:12px;height:12px;border-radius:4px;background:var(--c)}
+.big-num{font-size:44px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.commit{grid-column:span 12}
+.clist{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.citem{display:flex;gap:14px;align-items:flex-start;padding:18px;border-radius:20px;background:var(--surface-2)}
+.citem b{display:block;font-weight:600;font-size:16.5px;line-height:1.4}
+.citem .muted{font-size:14.5px;margin-top:4px}
+.due{margin-top:10px}
+
+/* ============ Ask ============ */
+.ask-layout{max-width:980px;margin-inline:auto}
+.scope{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:26px}
+.scope .lbl{font-size:16px;color:var(--ink-2)}
+.scope-pill{display:inline-flex;align-items:center;gap:10px;height:48px;padding:0 18px 0 14px;border-radius:999px;background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--line-2);font-weight:600;font-size:17px}
+.scope-pill .mono{width:30px;height:30px;font-size:13px;border-radius:50%}
+.scope .spacer{flex:1}
+.msg-me{display:flex;justify-content:flex-start;margin-bottom:22px}
+.msg-me .bubble{max-width:min(640px,88%);background:var(--accent);color:var(--on-accent);padding:18px 22px;border-radius:26px;border-start-start-radius:8px;font-size:19px;line-height:1.5;font-weight:500}
+.interpret{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:16px;color:var(--ink-2);margin:0 0 16px}
+.interpret i{font-size:20px;color:var(--accent)}
+.interpret button{font-weight:600;color:var(--ink);text-decoration:underline;text-decoration-color:var(--plum-300);text-underline-offset:4px}
+.answer{padding:34px}
+.answer-top{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.brain-ic{width:48px;height:48px;border-radius:16px;overflow:hidden;background:var(--plum-50);display:grid;place-items:center}
+:root[data-theme="dark"] .brain-ic{background:#2A1B4F}
+.brain-ic img{width:34px}
+.direct{font-size:clamp(24px,2.3vw,31px);line-height:1.3;font-weight:700;letter-spacing:-.015em;margin-bottom:22px}
+.claim{padding:18px 20px;margin-bottom:14px;border-radius:20px;background:color-mix(in srgb,var(--c) 9%,var(--surface))}
+
+.claim p{font-size:18.5px;line-height:1.65}
+.claim .tag{margin-bottom:10px}
+.cite{display:inline-grid;place-items:center;min-width:28px;height:28px;padding:0 6px;margin:0 3px;border-radius:9px;font-size:14px;font-weight:700;background:color-mix(in srgb,var(--c) 22%,var(--surface));color:var(--ink);vertical-align:2px;transition:transform .16s var(--ease-out),background-color .2s ease;box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--c) 55%,transparent)}
+.cite:active{transform:scale(.92)}
+@media (hover:hover) and (pointer:fine){.cite:hover{background:var(--c);color:var(--on)}}
+.gap-note{display:flex;gap:14px;align-items:flex-start;padding:18px 20px;border-radius:20px;background:color-mix(in srgb,var(--yellow) 18%,var(--surface));margin:24px 0 8px;font-size:17px;line-height:1.5}
+.gap-note i{font-size:24px;color:#B38F00;flex:none}
+:root[data-theme="dark"] .gap-note i{color:var(--yellow)}
+.srcs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:26px}
+.src{display:flex;gap:14px;align-items:flex-start;text-align:start;padding:16px;border-radius:20px;background:var(--surface-2);box-shadow:inset 0 0 0 1.5px var(--line);transition:box-shadow .2s ease,transform .16s var(--ease-out),background-color .2s ease}
+.src:active{transform:scale(.98)}
+.src b{display:block;font-size:16px;font-weight:600;line-height:1.35}
+.src span{font-size:14.5px;color:var(--ink-2)}
+.src.lit,.src:focus-visible{box-shadow:inset 0 0 0 2px var(--c);background:color-mix(in srgb,var(--c) 10%,var(--surface))}
+@media (hover:hover) and (pointer:fine){.src:hover{box-shadow:inset 0 0 0 2px var(--c)}}
+.follow{display:flex;gap:10px;flex-wrap:wrap;margin-top:28px;padding-top:24px;border-top:1px solid var(--line)}
+.ask-dock{position:sticky;bottom:0;margin-top:28px;padding:28px 0 18px;background:linear-gradient(to top,var(--bg) 62%,transparent)}
+
+/* ============ Drawer & modal ============ */
+.scrim{position:fixed;inset:0;background:rgb(21 10 40 / .38);opacity:0;pointer-events:none;transition:opacity .25s ease;z-index:40}
+.scrim.on{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:12px;bottom:12px;left:12px;width:min(500px,calc(100vw - 24px));background:var(--surface);border-radius:28px;box-shadow:var(--shadow-lg);z-index:50;display:flex;flex-direction:column;transform:translateX(calc(-100% - 24px));transition:transform .45s var(--ease-drawer),visibility 0s linear .45s;visibility:hidden;overflow:hidden}
+.drawer.on{transform:none;visibility:visible;transition:transform .45s var(--ease-drawer),visibility 0s}
+.drawer-head{display:flex;align-items:center;gap:14px;padding:22px 22px 18px;border-bottom:1px solid var(--line)}
+.drawer-head b{display:block;font-size:19px;font-weight:700}
+.drawer-head span{font-size:15px;color:var(--ink-2)}
+.drawer-head .icon-btn{margin-inline-start:auto}
+.drawer-body{flex:1;overflow:auto;padding:22px;overscroll-behavior:contain}
+.wave{display:flex;align-items:center;gap:3px;height:64px;padding:12px 16px;border-radius:18px;background:var(--surface-2);margin-bottom:20px}
+.wave i{flex:1;border-radius:3px;background:var(--line-2);min-height:4px}
+.wave i.on{background:var(--cyan)}
+.wave-cap{display:flex;justify-content:space-between;align-items:center;margin:-8px 0 22px;font-size:14.5px;color:var(--ink-2)}
+.line{display:grid;grid-template-columns:62px 1fr;gap:12px;padding:12px 10px;border-radius:16px;font-size:17px;line-height:1.55}
+.line .t{font-size:14px;color:var(--ink-2);padding-top:3px}
+.line b{font-weight:700}
+.line.key{background:color-mix(in srgb,var(--cyan) 14%,var(--surface));box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--cyan) 60%,transparent)}
+.drawer-foot{padding:16px 22px 22px;border-top:1px solid var(--line);display:flex;gap:10px;flex-wrap:wrap}
+.drawer-foot .btn{flex:1 1 auto}
+.brief-sec{margin-bottom:22px}
+.brief-sec h4{font-size:15px;font-weight:700;color:var(--ink-2);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.brief-sec h4 i{font-size:18px;color:var(--c)}
+.brief-sec ul{list-style:none;display:grid;gap:8px}
+.brief-sec li{padding:12px 14px;border-radius:14px;background:var(--surface-2);font-size:16.5px;line-height:1.45}
+
+.modal{position:fixed;left:50%;top:50%;width:min(620px,calc(100vw - 28px));max-height:calc(100dvh - 40px);overflow:auto;translate:-50% -50%;background:var(--surface);border-radius:28px;box-shadow:var(--shadow-lg);z-index:60;padding:28px;opacity:0;scale:.96;pointer-events:none;transition:opacity .2s ease,scale .25s var(--ease-out)}
+.modal.on{opacity:1;scale:1;pointer-events:auto}
+.modal h2{font-size:24px;font-weight:800;margin-bottom:6px}
+.mail{margin:22px 0;border-radius:20px;box-shadow:inset 0 0 0 1.5px var(--line);overflow:hidden}
+.mail-row{display:flex;gap:10px;padding:12px 18px;border-bottom:1px solid var(--line);font-size:16px}
+.mail-row span{color:var(--ink-2);min-width:48px}
+.mail textarea{width:100%;min-height:180px;border:0;outline:0;resize:vertical;padding:16px 18px;background:transparent;font-size:17px;line-height:1.6}
+.safe{display:flex;gap:10px;align-items:center;font-size:15.5px;color:var(--ink-2);margin-bottom:20px}
+.safe i{font-size:20px;color:var(--green)}
+.modal-actions{display:flex;gap:10px;flex-wrap:wrap}
+.modal-actions .btn-primary{flex:1;min-width:220px}
+
+.toast{position:fixed;bottom:24px;left:50%;translate:-50% 0;z-index:70;display:flex;align-items:center;gap:14px;padding:14px 20px 14px 16px;border-radius:20px;background:var(--plum-900);color:#fff;box-shadow:var(--shadow-lg);font-size:16.5px;font-weight:500;transition:transform .4s var(--ease-out),opacity .3s ease}
+.toast[hidden]{display:flex!important;opacity:0;transform:translateY(24px);pointer-events:none}
+.toast .sq{background:var(--green);color:#06331F}
+
+/* ============ Clients ============ */
+.tools{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:26px}
+.search{display:flex;align-items:center;gap:10px;height:54px;padding:0 20px;border-radius:999px;background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--line-2);flex:1;min-width:240px;max-width:420px}
+.search i{font-size:22px;color:var(--ink-2)}
+.search input{border:0;outline:0;background:transparent;flex:1;min-width:0;font-size:17px}
+.search:focus-within{box-shadow:inset 0 0 0 2px var(--accent)}
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:20px}
+.client{display:flex;flex-direction:column;gap:16px;text-align:start;padding:24px;border-radius:var(--r-card);background:var(--surface);box-shadow:var(--shadow);transition:transform .25s var(--ease-out),box-shadow .25s ease}
+.client:active{transform:scale(.985)}
+@media (hover:hover) and (pointer:fine){.client:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}}
+.client-top{display:flex;gap:14px;align-items:center}
+.mono{flex:none;display:grid;place-items:center;width:56px;height:56px;border-radius:18px;font-weight:800;font-size:22px;color:#fff;background:var(--m)}
+.client b{display:block;font-size:19px;font-weight:700;line-height:1.25}
+.client .dom{font-size:14.5px;color:var(--ink-2)}
+.client-tags{display:flex;gap:8px;flex-wrap:wrap}
+.client-foot{display:flex;align-items:center;gap:12px;padding-top:14px;border-top:1px solid var(--line);font-size:14.5px;color:var(--ink-2)}
+.client-foot .ring{margin-inline-start:auto}
+.alert-line{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600;color:var(--pink)}
+:root[data-theme="dark"] .alert-line{color:#FF6FA8}
+.ring{position:relative;width:46px;height:46px}
+.ring svg{width:46px;height:46px;rotate:-90deg}
+.ring circle{fill:none;stroke-width:5}
+.ring .tr{stroke:var(--line)}
+.ring .fg{stroke:var(--accent);stroke-linecap:round}
+.ring span{position:absolute;inset:0;display:grid;place-items:center;font-size:12.5px;font-weight:700;color:var(--ink)}
+.empty{grid-column:1/-1;display:grid;place-items:center;text-align:center;gap:12px;padding:60px 20px;border-radius:var(--r-card);background:var(--surface-2);box-shadow:inset 0 0 0 2px dashed var(--line)}
+.empty i{font-size:44px;color:var(--plum-300)}
+
+/* ============ Client space ============ */
+.back{display:inline-flex;align-items:center;gap:8px;font-weight:600;color:var(--ink-2);margin-bottom:18px;height:40px}
+.back i{font-size:20px}
+.chero{display:flex;gap:24px;align-items:center;flex-wrap:wrap;margin-bottom:28px}
+.chero .mono{width:92px;height:92px;border-radius:28px;font-size:38px}
+.chero h1{font-size:clamp(32px,3.2vw,46px);font-weight:800;letter-spacing:-.025em;line-height:1.1}
+.chero .meta{display:flex;gap:10px 20px;flex-wrap:wrap;align-items:center;margin-top:10px;font-size:16.5px;color:var(--ink-2)}
+.chero .meta span{display:inline-flex;align-items:center;gap:8px}
+.chero .meta i{font-size:20px}
+.chero .actions{margin-inline-start:auto;display:flex;gap:10px;flex-wrap:wrap}
+.tabs{position:relative;display:flex;gap:4px;padding:6px;border-radius:999px;background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--line);overflow-x:auto;scrollbar-width:none;margin-bottom:26px;width:max-content;max-width:100%}
+.tabs::-webkit-scrollbar{display:none}
+.tab{position:relative;z-index:1;height:48px;padding:0 22px;border-radius:999px;font-weight:600;font-size:16.5px;color:var(--ink-2);white-space:nowrap;transition:color .25s ease}
+.tab[aria-selected="true"]{color:var(--on-accent)}
+.tab-ind{position:absolute;top:6px;height:48px;border-radius:999px;background:var(--accent);transition:transform .35s var(--ease-io),width .35s var(--ease-io);z-index:0;right:0}
+.pane[hidden]{display:none}
+.ov{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:22px}
+.state{grid-column:span 5}
+.state-grp{display:grid;gap:12px}
+.state-row{display:flex;gap:14px;align-items:flex-start;padding:16px;border-radius:18px;background:var(--surface-2)}
+.state-row b{display:block;font-size:14.5px;color:var(--ink-2);font-weight:600;margin-bottom:2px}
+.state-row p{font-size:17px;line-height:1.45}
+.prop{grid-column:span 7}
+.chart-wrap{position:relative}
+.pchart{width:100%;height:auto;overflow:visible}
+.pchart .grid-l{stroke:var(--line);stroke-width:1}
+.pchart .ax{fill:var(--ink-2);font-size:14px;font-family:Rubik}
+.pchart .path{fill:none;stroke:var(--accent);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.pchart .area{fill:url(#pgrad)}
+.pchart .pt{fill:var(--surface);stroke:var(--accent);stroke-width:4}
+.pchart .pt.pend{stroke:var(--yellow);fill:var(--yellow)}
+.pchart .val{fill:var(--ink);font-size:17px;font-weight:700;font-family:Rubik}
+.pchart .cap{fill:var(--ink-2);font-size:13.5px;font-family:Rubik}
+.decs{grid-column:span 12}
+.dlist{display:grid;gap:12px}
+.drow{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;padding:16px 18px;border-radius:20px;background:var(--surface-2)}
+.drow p{font-size:17px;font-weight:500;line-height:1.4}
+.drow .muted{font-size:14.5px;margin-top:3px}
+.drow.old p{text-decoration:line-through;text-decoration-color:var(--ink-3);color:var(--ink-2)}
+.tl{position:relative;display:grid;gap:18px;padding-inline-start:36px}
+.tl::before{content:"";position:absolute;inset-inline-start:21px;top:8px;bottom:8px;width:2px;background:var(--line)}
+.tl-item{position:relative;display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:flex-start}
+.tl-item .sq{position:relative;margin-inline-start:-36px;box-shadow:0 0 0 6px var(--bg)}
+.tl-item .card{padding:20px 22px}
+.tl-item .card b{font-size:17.5px;display:block}
+.tl-item .when{font-size:14.5px;color:var(--ink-2)}
+.tl-item .card p{margin-top:6px;font-size:16.5px;color:var(--ink-2)}
+.pref-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
+.pref{display:flex;gap:14px;align-items:flex-start;padding:16px 0}
+.pref+.pref{border-top:1px solid var(--line)}
+.pref p{font-size:17px;line-height:1.5}
+.pref .muted{font-size:14.5px;margin-top:4px}
+.cov{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+.cov .card{display:flex;gap:14px;align-items:center;padding:20px}
+.cov b{display:block;font-size:17px}
+.cov span{font-size:14.5px;color:var(--ink-2)}
+.cov .st{margin-inline-start:auto}
+
+/* ============ Ingest ============ */
+.drop{position:relative;display:grid;place-items:center;text-align:center;gap:14px;min-height:300px;padding:40px 24px;border-radius:32px;background:color-mix(in srgb,var(--accent) 5%,var(--surface));cursor:pointer;transition:background-color .25s ease,transform .25s var(--ease-out)}
+.drop svg.dash{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.drop svg.dash rect{fill:none;stroke:color-mix(in srgb,var(--accent) 55%,transparent);stroke-width:2.5;stroke-dasharray:12 10}
+.drop.over{background:color-mix(in srgb,var(--accent) 12%,var(--surface));transform:scale(1.01)}
+.drop.over svg.dash rect{animation:march .6s linear infinite}
+@keyframes march{to{stroke-dashoffset:-22}}
+.drop-ic{width:96px;height:96px;border-radius:30px;display:grid;place-items:center;font-size:50px;background:var(--accent);color:var(--on-accent);box-shadow:0 20px 40px -18px color-mix(in srgb,var(--accent) 90%,transparent);transition:transform .3s var(--ease-out)}
+.drop.over .drop-ic{transform:translateY(-6px) scale(1.05)}
+.drop h2{font-size:clamp(24px,2.4vw,32px);font-weight:800;letter-spacing:-.02em}
+.drop p{font-size:18px;color:var(--ink-2);max-width:48ch}
+.drop .formats{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:6px}
+.how{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;margin:24px 0 40px}
+.how .card{padding:22px;display:flex;flex-direction:column;gap:14px}
+.how h2{font-size:19px}
+.how ol{list-style:none;counter-reset:s;display:grid;gap:8px}
+.how li{counter-increment:s;display:flex;gap:10px;font-size:15.5px;line-height:1.45;color:var(--ink-2)}
+.how li::before{content:counter(s);flex:none;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;font-size:13px;font-weight:700;background:color-mix(in srgb,var(--c) 22%,var(--surface));color:var(--ink)}
+.how .card .btn{margin-top:auto}
+.rec{align-self:stretch}
+.rec.on{background:var(--pink);color:#fff;box-shadow:none}
+.recwave{display:none;align-items:center;justify-content:center;gap:4px;height:44px}
+.rec-on .recwave{display:flex}
+.recwave i{width:5px;height:12px;border-radius:3px;background:var(--pink);animation:bounce 1s var(--ease-io) infinite}
+@keyframes bounce{50%{transform:scaleY(3)}}
+.q{display:grid;gap:14px}
+.qitem{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:18px;align-items:start;padding:20px 22px}
+.qitem > .btn{align-self:center}
+.assign b{display:inline}
+.qitem b{font-size:17.5px;display:block;line-height:1.35;overflow-wrap:anywhere}
+.qitem .muted{font-size:15px;margin-top:3px}
+.steps{display:flex;align-items:center;gap:6px;margin-top:14px}
+.step{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:600;color:var(--ink-3);transition:color .3s ease}
+.step .d{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:14px;box-shadow:inset 0 0 0 2px var(--line-2);color:transparent;transition:background-color .3s ease,box-shadow .3s ease,color .3s ease}
+.step.done{color:var(--ink)}
+.step.done .d{background:var(--accent);box-shadow:none;color:var(--on-accent)}
+.step.now .d{box-shadow:inset 0 0 0 2px var(--accent)}
+.step.now{color:var(--ink)}
+.step+.step::before{content:"";width:22px;height:2px;border-radius:2px;background:var(--line-2);margin-inline-end:2px}
+.step.done+.step::before{background:var(--accent)}
+.assign{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:16px;padding:14px 16px;border-radius:18px;background:color-mix(in srgb,var(--accent) 8%,var(--surface))}
+.assign p{font-size:16px;flex:1;min-width:220px}
+.qitem.fail{box-shadow:var(--shadow),inset 0 0 0 2px color-mix(in srgb,var(--pink) 45%,transparent)}
+.conn{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-top:18px}
+.conn .card{display:flex;gap:14px;align-items:center;padding:18px 20px}
+.conn .logo-b{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:var(--surface-2);box-shadow:inset 0 0 0 1.5px var(--line);flex:none}
+.conn .logo-b img{width:24px;height:24px}
+.conn .logo-b i{font-size:26px}
+.conn b{display:block;font-size:16.5px}
+.conn span{font-size:14px;color:var(--ink-2)}
+.on-dot{color:#0E9E63;font-weight:600}
+:root[data-theme="dark"] .on-dot{color:var(--green)}
+.sec-title{font-size:24px;font-weight:800;letter-spacing:-.015em;margin:44px 0 16px;display:flex;align-items:center;gap:12px}
+
+/* ============ Knowledge ============ */
+.kgrid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:22px}
+.kfeat{grid-column:span 7;display:grid;gap:18px}
+.kfeat .steps-v{list-style:none;display:grid;gap:10px;counter-reset:k}
+.kfeat .steps-v li{counter-increment:k;display:flex;gap:14px;align-items:center;padding:14px 16px;border-radius:16px;background:var(--surface-2);font-size:17px}
+.kfeat .steps-v li::before{content:counter(k);flex:none;display:grid;place-items:center;width:32px;height:32px;border-radius:50%;font-weight:700;font-size:15px;background:var(--accent);color:var(--on-accent)}
+.kside{grid-column:span 5;display:grid;gap:22px;align-content:start}
+.kcard{display:flex;gap:16px;align-items:flex-start}
+.kcard b{font-size:18px;display:block;line-height:1.3}
+.kcard .muted{font-size:15px;margin-top:6px}
+.kcard .tag{margin-top:12px}
+.kowner{display:flex;align-items:center;gap:10px;font-size:15px;color:var(--ink-2)}
+
+/* ============ Reveal (initial state set by JS, so no-JS stays visible) ============ */
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+/* ============ Responsive ============ */
+@media (max-width:1180px){
+  .next,.pending,.feed,.intake{grid-column:span 12}
+  .state,.prop{grid-column:span 12}
+  .how{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .kfeat,.kside{grid-column:span 12}
+  .clist{grid-template-columns:1fr}
+}
+@media (max-width:900px){
+  .app{grid-template-columns:1fr}
+  .side{display:none}
+  .topbar{display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:30;padding:12px 16px;padding-top:calc(12px + env(safe-area-inset-top));background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%)}
+  .topbar img{width:40px;height:auto}
+  .topbar b{font-size:19px;font-weight:700}
+  .topbar .sp{flex:1}
+  .main{padding:18px 16px calc(120px + env(safe-area-inset-bottom))}
+  .dock{display:flex;position:fixed;z-index:35;left:50%;bottom:calc(12px + env(safe-area-inset-bottom));translate:-50% 0;width:calc(100% - 20px);max-width:520px;gap:4px;padding:8px;border-radius:999px;background:color-mix(in srgb,var(--surface) 72%,transparent);backdrop-filter:blur(18px) saturate(180%);-webkit-backdrop-filter:blur(18px) saturate(180%);box-shadow:var(--shadow-lg),inset 0 0 0 1px rgb(255 255 255 / .35)}
+  :root[data-theme="dark"] .dock{box-shadow:var(--shadow-lg),inset 0 0 0 1px rgb(255 255 255 / .08)}
+  .dock a{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 2px;border-radius:999px;text-decoration:none;color:var(--ink-2);font-size:12.5px;font-weight:600;-webkit-tap-highlight-color:transparent;transition:background-color .2s ease,color .2s ease,transform .16s var(--ease-out)}
+  .dock a:active{transform:scale(.95)}
+  .dock a i{font-size:25px}
+  .dock a[aria-current="page"]{background:var(--accent);color:var(--on-accent)}
+  .login{grid-template-columns:1fr}
+  .login-art{order:-1;min-height:46vh;margin:10px!important;border-radius:32px!important}
+  .login-copy{padding:28px 20px 40px;gap:24px}
+  .login-copy .logo{width:220px}
+  .float{width:62%;padding:12px 14px;font-size:13.5px;gap:10px}
+  .float .sq{width:34px;height:34px;font-size:18px;border-radius:11px}
+  .f2,.f4{display:none}
+  .f1{top:7%;right:5%}.f3{bottom:7%;right:auto;left:5%}
+  .art-core{width:120px}
+  .gbtn{align-self:stretch}
+  .page-head{margin-bottom:22px}
+  .ask{padding:8px;padding-inline-start:18px;border-radius:24px}
+  .ask > i{display:none}
+  .ask input{height:54px;font-size:17px}
+  .mic{width:48px;height:48px;font-size:22px}
+  .send{width:52px;height:52px;border-radius:18px;font-size:24px}
+  .suggest{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding-inline:16px;scroll-snap-type:x mandatory}
+  .suggest::-webkit-scrollbar{display:none}
+  .suggest .chip{flex:none;scroll-snap-align:start}
+  .today-grid,.ov,.kgrid{gap:16px}
+  .card{padding:22px}
+  .answer{padding:22px}
+  .srcs{grid-template-columns:1fr}
+  .how{grid-template-columns:1fr}
+  .pref-grid{grid-template-columns:1fr}
+  .drawer{top:auto;left:0;right:0;bottom:0;width:100%;height:min(86dvh,760px);border-radius:28px 28px 0 0;transform:translateY(105%)}
+  .drawer::before{content:"";position:absolute;top:8px;left:50%;translate:-50% 0;width:44px;height:5px;border-radius:5px;background:var(--line-2)}
+  .drawer.on{transform:none}
+  .toast{bottom:calc(100px + env(safe-area-inset-bottom));width:calc(100% - 32px)}
+  .qitem{grid-template-columns:auto minmax(0,1fr);padding:18px}
+  .qitem > .btn,.qitem > .tag{grid-column:1/-1;justify-self:start}
+  .steps{flex-wrap:wrap}
+  .drow{grid-template-columns:auto 1fr}
+  .drow > .tag{grid-column:2;justify-self:start}
+  .chero .actions{margin-inline-start:0;width:100%}
+  .chero .mono{width:72px;height:72px;font-size:30px;border-radius:22px}
+  .ask-dock{position:static;background:none;padding:0}
+  .scope .spacer{display:none}
+  .scope .lbl{width:100%}
+  .flist li{grid-template-columns:auto 1fr}
+  .flist .when{grid-column:2}
+  .bars{height:170px}
+}
+</style>
+</head>
+<body>
+
+<!-- ======================= LOGIN ======================= -->
+<section class="screen login" data-screen="login" aria-label="כניסה">
+  <div class="login-copy">
+    <img class="logo js-logo" src="assets/logo.png" alt="SiteIt 2nd Brain" width="1759" height="894">
+    <div>
+      <h1 class="rv">כל מה שסייט איט יודעת. <span class="hl" id="hl-login">בשאלה אחת.</span></h1>
+    </div>
+    <p class="lead rv">פגישות, הודעות, הצעות מחיר והחלטות של כל הלקוחות, עם מקור שאפשר לבדוק לכל תשובה.</p>
+    <button class="btn gbtn rv" data-go="today"><img src="https://cdn.simpleicons.org/google" alt="" width="24" height="24">התחברות עם Google</button>
+    <p class="login-note rv"><i class="ph ph-shield-check"></i>הכניסה לעובדי סייט איט בלבד</p>
+  </div>
+  <div class="login-art" aria-hidden="true">
+    <div class="dots" id="dots" data-dt-spacing="26" data-dt-glow-radius="260"></div>
+    <svg class="art-lines" id="artLines"></svg>
+    <img class="art-core" id="artCore" src="assets/mark.png" alt="">
+    <div class="float f1" data-src="wa" data-line="var(--green)"><div class="sq"><i class="ph-fill ph-whatsapp-logo"></i></div><div><b>נגה, סטודיו נגה</b><span>אפשר לקבל הצעה מצומצמת רק לשלב א'?</span></div></div>
+    <div class="float f2" data-src="meet" data-line="var(--cyan)"><div class="sq"><i class="ph-fill ph-microphone"></i></div><div><b>פגישה, 8 בספטמבר</b><span>"הכיוון מתאים לי, אבל זה יותר ממה שתכננתי"</span></div></div>
+    <div class="float f3" data-src="doc" data-line="var(--yellow)"><div class="sq"><i class="ph-fill ph-file-text"></i></div><div><b>הצעת מחיר, גרסה 3</b><span>שלב א', 12,900 ש"ח. ממתינה לתשובה</span></div></div>
+    <div class="float f4" data-src="dec" data-line="var(--pink)"><div class="sq"><i class="ph-fill ph-seal-check"></i></div><div><b>החלטה</b><span>בונים בשני שלבים. אושר ע"י דני</span></div></div>
+  </div>
+</section>
+
+<!-- ======================= APP ======================= -->
+<div class="app" data-screen="app" hidden>
+  <aside class="side" aria-label="ניווט ראשי">
+    <div class="brand"><img class="js-logo" src="assets/logo.png" alt="SiteIt 2nd Brain" width="1759" height="894"></div>
+    <nav class="nav">
+      <a href="#today" data-nav="today"><i class="ph ph-sun-horizon"></i>היום שלי</a>
+      <a href="#clients" data-nav="clients"><i class="ph ph-buildings"></i>לקוחות</a>
+      <a href="#ask" data-nav="ask"><i class="ph ph-sparkle"></i>שאל את המוח</a>
+      <a href="#knowledge" data-nav="knowledge"><i class="ph ph-books"></i>ידע החברה</a>
+      <a href="#ingest" data-nav="ingest"><i class="ph ph-tray-arrow-down"></i>קליטת מידע<span class="badge num">2</span></a>
+    </nav>
+    <div class="side-foot">
+      <button class="btn btn-primary add-btn" data-go="ingest"><i class="ph-bold ph-plus"></i>הוסף ידע</button>
+      <div class="me">
+        <span class="av gal">גא</span>
+        <div><b>גל ארבל</b><span>קידום אתרים</span></div>
+        <button class="icon-btn js-theme" aria-label="החלפת מצב כהה ובהיר"><i class="ph ph-moon"></i></button>
+      </div>
+    </div>
+  </aside>
+
+  <header class="topbar">
+    <img src="assets/mark-128.png" alt="SiteIt 2nd Brain" width="128" height="155">
+    <b id="topTitle">היום שלי</b>
+    <span class="sp"></span>
+    <button class="icon-btn js-theme" aria-label="החלפת מצב כהה ובהיר"><i class="ph ph-moon"></i></button>
+    <span class="av gal">גא</span>
+  </header>
+
+  <main class="main">
+    <div class="wrap">
+
+    <!-- ============ TODAY ============ -->
+    <section class="screen" data-view="today" aria-labelledby="t-today">
+      <div class="page-head rv">
+        <div>
+          <p class="kicker">יום רביעי, 30 בספטמבר</p>
+          <h1 id="t-today">בוקר טוב, גל</h1>
+          <p>יש לך 3 פגישות היום, והראשונה <span class="hl" id="hl-today">בעוד 40 דקות</span>.</p>
+        </div>
+      </div>
+
+      <form class="ask rv" data-go-form="ask" role="search">
+        <i class="ph-duotone ph-sparkle"></i>
+        <label class="sr" for="askHome">שאלה למוח</label>
+        <input id="askHome" type="text" placeholder="שאל כל דבר על לקוח, פגישה או החלטה...">
+        <button type="button" class="mic" aria-label="שאלה בקול" data-go="ask"><i class="ph ph-microphone"></i></button>
+        <button class="send" aria-label="שליחה"><i class="ph-bold ph-arrow-left"></i></button>
+      </form>
+      <div class="suggest rv">
+        <button class="chip" data-go="ask"><i class="ph ph-currency-circle-dollar"></i>איך סטודיו נגה הגיבו להצעת המחיר?</button>
+        <button class="chip" data-go="ask"><i class="ph ph-list-checks"></i>אילו התחייבויות פתוחות אצל ד"ר אבן?</button>
+        <button class="chip" data-go="ask"><i class="ph ph-chart-line-up"></i>כמה גבינו השנה על אתר תדמית?</button>
+      </div>
+
+      <div class="today-grid">
+        <article class="card next rv" aria-labelledby="t-next">
+          <span class="countdown"><i class="ph-fill ph-clock"></i>בעוד 40 דקות</span>
+          <h2 id="t-next">סטודיו נגה עיצוב פנים</h2>
+          <div class="next-meta">
+            <span><i class="ph ph-clock"></i><span class="num">10:30 - 11:15</span></span>
+            <span><i class="ph ph-video-camera"></i>Google Meet</span>
+            <span><i class="ph ph-users"></i>נגה ועמרי, שותפים</span>
+          </div>
+          <ul class="brief-list">
+            <li><i class="ph-fill ph-file-text" style="color:var(--yellow)"></i>הצעה לשלב א' (12,900 ש"ח) נשלחה לפני שבועיים, עדיין בלי תשובה</li>
+            <li><i class="ph-fill ph-seal-warning" style="color:#FF6FA8"></i>בפגישה הקודמת הבטחת דוגמאות לעמוד שירות. לא נמצא תיעוד שנשלחו</li>
+            <li><i class="ph-fill ph-question" style="color:var(--cyan)"></i>שווה לברר: מי מחליט, נגה או עמרי?</li>
+          </ul>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-primary" data-drawer="brief"><i class="ph-bold ph-lightning"></i>הכן אותי</button>
+            <button class="btn btn-ghost" data-go="client"><i class="ph ph-buildings"></i>מרחב הלקוח</button>
+          </div>
+        </article>
+
+        <article class="card pending rv" aria-labelledby="t-pend">
+          <div class="card-head"><h2 id="t-pend"><span class="sq sm" data-src="dec"><i class="ph-bold ph-hand-pointing"></i></span>ממתין לך</h2><span class="tag solid" data-src="dec">3</span></div>
+          <ul class="plist">
+            <li data-src="dec"><span class="sq sm"><i class="ph-fill ph-seal-check"></i></span><div><b>לאשר החלטה: בונים בשני שלבים</b><span>סטודיו נגה, חולץ מפגישה 22.9</span></div><i class="ph ph-caret-left go"></i></li>
+            <li data-src="meet"><span class="sq sm"><i class="ph-fill ph-link"></i></span><div><b>לשייך פגישה ללקוח</b><span>"שיחת היכרות", 29.9, לא זוהה לקוח</span></div><i class="ph ph-caret-left go"></i></li>
+            <li data-src="doc"><span class="sq sm"><i class="ph-fill ph-calendar-x"></i></span><div><b>התחייבות בלי תאריך</b><span>"נשלח מחקר מילות מפתח", כרמי ושות'</span></div><i class="ph ph-caret-left go"></i></li>
+          </ul>
+        </article>
+
+        <article class="card feed rv" aria-labelledby="t-feed">
+          <div class="card-head"><h2 id="t-feed">מה השתנה אצל הלקוחות שלך</h2><button class="btn btn-sm btn-soft" data-go="clients">כל הלקוחות</button></div>
+          <ul class="flist">
+            <li data-src="wa"><span class="sq"><i class="ph-fill ph-whatsapp-logo"></i></span><p><b>פזית קוסמטיקה</b> ביקשה להוסיף עמוד מבצעים לפני החגים</p><span class="when">לפני שעה</span></li>
+            <li data-src="dec"><span class="sq"><i class="ph-fill ph-seal-check"></i></span><p><b>כרמי ושות'</b>: דני אישר להתחיל GEO בנובמבר</p><span class="when">אתמול</span></li>
+            <li data-src="meet"><span class="sq"><i class="ph-fill ph-microphone"></i></span><p><b>ד"ר אבן</b>: תמלול פגישת רבעון נקלט, 4 החלטות חולצו</p><span class="when">שני</span></li>
+            <li data-src="doc"><span class="sq"><i class="ph-fill ph-file-text"></i></span><p><b>מטבחי אורן</b>: דוח ספטמבר הועלה ושויך</p><span class="when">שני</span></li>
+          </ul>
+        </article>
+
+        <article class="card intake rv" aria-labelledby="t-intake">
+          <div class="card-head"><h2 id="t-intake">מה נקלט החודש</h2></div>
+          <div style="display:flex;align-items:baseline;gap:12px"><span class="big-num num" data-count="186">186</span><span class="muted">פריטים, מ-31 לקוחות</span></div>
+          <div class="bars" id="bars" role="img" aria-label="פריטים שנקלטו לפי שבוע וסוג מקור"></div>
+          <div class="bar-l"><span>שבוע 1</span><span>שבוע 2</span><span>שבוע 3</span><span>השבוע</span></div>
+          <div class="legend"><span data-src="meet"><i></i>פגישות</span><span data-src="wa"><i></i>וואטסאפ</span><span data-src="doc"><i></i>מסמכים</span><span data-src="dec"><i></i>הקלטות</span></div>
+        </article>
+
+        <article class="card commit rv" aria-labelledby="t-commit">
+          <div class="card-head"><h2 id="t-commit">התחייבויות שמתקרבות</h2><span class="muted small">רק מה שתועד. סטטוס חי מ-Asana ו-Monday</span></div>
+          <div class="clist">
+            <div class="citem" data-src="dec"><span class="sq sm"><i class="ph-fill ph-flag"></i></span><div><b>לשלוח לנגה דוגמאות לעמוד שירות</b><p class="muted">הבטחת בפגישה 22.9</p><span class="tag due" data-src="dec"><i class="ph-fill ph-warning"></i>באיחור של 6 ימים</span></div></div>
+            <div class="citem" data-src="meet"><span class="sq sm"><i class="ph-fill ph-flag"></i></span><div><b>מחקר מתחרים לד"ר אבן</b><p class="muted">מיה, משימה ב-Asana</p><span class="tag due" data-src="meet"><i class="ph ph-calendar"></i>יום חמישי, 1.10</span></div></div>
+            <div class="citem" data-src="wa"><span class="sq sm"><i class="ph-fill ph-flag"></i></span><div><b>העלאת תפריט חורף לקפה רוזמרין</b><p class="muted">איתי, משימה ב-Monday</p><span class="tag due" data-src="wa"><i class="ph ph-check"></i>בביצוע</span></div></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ============ ASK ============ -->
+    <section class="screen ask-layout" data-view="ask" hidden aria-label="שאל את המוח">
+      <div class="scope rv">
+        <span class="lbl">מחפש בתוך</span>
+        <button class="scope-pill"><span class="mono" style="--m:#0878AA">נ</span>סטודיו נגה עיצוב פנים<i class="ph ph-caret-down"></i></button>
+        <span class="spacer"></span>
+        <button class="btn btn-sm btn-ghost"><i class="ph ph-magnifying-glass"></i>רק מקורות</button>
+        <button class="btn btn-sm btn-soft"><i class="ph-bold ph-plus"></i>שיחה חדשה</button>
+      </div>
+
+      <div class="msg-me rv"><div class="bubble">איך סטודיו נגה יצאו מהפגישה שהייתה לנו לפני שתי פגישות, לגבי המחיר שהצענו לבניית האתר?</div></div>
+      <p class="interpret rv"><i class="ph ph-info"></i>הבנתי "לפני שתי פגישות" כפגישה מ-8 בספטמבר. <button>התכוונתי לפגישה אחרת</button></p>
+
+      <article class="card answer rv" id="answer">
+        <div class="answer-top"><span class="brain-ic"><img src="assets/mark-128.png" alt=""></span><div><b>המוח</b><div class="muted small">על בסיס 3 מקורות</div></div></div>
+        <p class="direct stream">הם יצאו מתעניינים, אבל עם הסתייגות מהמחיר.</p>
+        <div class="claim" data-src="wa" style="--c:var(--green)">
+          <span class="tag" data-src="wa"><i class="ph-fill ph-quotes"></i>נאמר במפורש</span>
+          <p class="stream">בפגישה ב-8 בספטמבר נגה אמרה שהכיוון מתאים לה, אבל שהעלות גבוהה ממה שתכננה.<button class="cite" data-src="meet" data-cite="1" aria-label="מקור 1">1</button> היא שאלה אם אפשר לחלק את העבודה לשלבים, וההצעה לא אושרה בפגישה.<button class="cite" data-src="meet" data-cite="1" aria-label="מקור 1">1</button></p>
+        </div>
+        <div class="claim" data-src="brain" style="--c:var(--plum-300)">
+          <span class="tag outline"><i class="ph ph-lightbulb"></i>פרשנות על בסיס המקורות</span>
+          <p class="stream">למחרת היא ביקשה בוואטסאפ הצעה מצומצמת לשלב א'.<button class="cite" data-src="wa" data-cite="2" aria-label="מקור 2">2</button> זה מחזק את ההבנה שההסתייגות הייתה מהעלות ומההיקף, אבל לא מוכיח מה היא הרגישה בסוף הפגישה.</p>
+        </div>
+        <div class="claim" data-src="doc">
+          <span class="tag" data-src="doc"><i class="ph-fill ph-clock-counter-clockwise"></i>מה קרה מאז</span>
+          <p class="stream">ב-16 בספטמבר נשלחה הצעה לשלב א' ב-12,900 ש"ח, ועדיין אין עליה תשובה.<button class="cite" data-src="doc" data-cite="3" aria-label="מקור 3">3</button></p>
+        </div>
+        <div class="gap-note"><i class="ph-fill ph-warning-circle"></i><div><b>מה חסר:</b> בוואטסאפ מוזכרת שיחת טלפון מ-15 בספטמבר, ואין לה תיעוד במוח. אם דיברת איתה, אפשר להקליט עדכון קצר.</div></div>
+
+        <div class="srcs">
+          <button class="src" data-src="meet" data-open="1"><span class="sq sm"><i class="ph-fill ph-microphone"></i></span><div><b>1. פגישה, 8.9</b><span>Timeless, דקה 23:41</span></div></button>
+          <button class="src" data-src="wa" data-open="2"><span class="sq sm"><i class="ph-fill ph-whatsapp-logo"></i></span><div><b>2. הודעה מנגה, 9.9</b><span>WhatsApp, 09:12</span></div></button>
+          <button class="src" data-src="doc" data-open="3"><span class="sq sm"><i class="ph-fill ph-file-pdf"></i></span><div><b>3. הצעת מחיר, גרסה 3</b><span>PDF, נשלח 16.9</span></div></button>
+        </div>
+
+        <div class="follow">
+          <button class="btn btn-sm btn-soft" data-open="1"><i class="ph ph-play-circle"></i>פתח את הקטע</button>
+          <button class="btn btn-sm btn-soft" data-go="client"><i class="ph ph-chart-line-down"></i>התפתחות ההצעה</button>
+          <button class="btn btn-sm btn-soft" data-drawer="brief"><i class="ph ph-lightning"></i>הכן אותי לשיחה הבאה</button>
+          <button class="btn btn-sm btn-primary" data-modal="mail"><i class="ph ph-envelope-simple"></i>טיוטת הודעת המשך</button>
+        </div>
+      </article>
+
+      <div class="ask-dock">
+        <form class="ask" onsubmit="return false" role="search">
+          <label class="sr" for="askFollow">שאלת המשך</label>
+          <input id="askFollow" type="text" placeholder='שאלת המשך, למשל: "ומה עמרי אמר?"'>
+          <button type="button" class="mic" aria-label="שאלה בקול"><i class="ph ph-microphone"></i></button>
+          <button class="send" aria-label="שליחה"><i class="ph-bold ph-arrow-left"></i></button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ============ CLIENTS ============ -->
+    <section class="screen" data-view="clients" hidden aria-labelledby="t-clients">
+      <div class="page-head rv">
+        <div><h1 id="t-clients">לקוחות</h1><p>47 לקוחות פעילים. קודם רואים מה המצב ומה חסר, ורק אחר כך את ההיסטוריה.</p></div>
+        <button class="btn btn-ghost"><i class="ph-bold ph-plus"></i>לקוח חדש</button>
+      </div>
+      <div class="tools rv">
+        <label class="search"><i class="ph ph-magnifying-glass"></i><span class="sr">חיפוש לקוח</span><input id="cSearch" type="search" placeholder="שם, דומיין או איש קשר"></label>
+        <button class="chip" aria-pressed="true" data-f="all">הכול</button>
+        <button class="chip" aria-pressed="false" data-f="seo">קידום SEO</button>
+        <button class="chip" aria-pressed="false" data-f="geo">GEO</button>
+        <button class="chip" aria-pressed="false" data-f="web">בניית אתרים</button>
+        <button class="chip" aria-pressed="false" data-f="mine">שלי</button>
+        <button class="chip" aria-pressed="false" data-f="attn"><i class="ph-fill ph-warning" style="color:var(--pink)"></i>דורש תשומת לב</button>
+      </div>
+      <div class="cgrid" id="cgrid"></div>
+    </section>
+
+    <!-- ============ CLIENT SPACE ============ -->
+    <section class="screen" data-view="client" hidden aria-labelledby="t-client">
+      <button class="back rv" data-go="clients"><i class="ph ph-arrow-right"></i>כל הלקוחות</button>
+      <div class="chero rv">
+        <span class="mono" style="--m:#0878AA">נ</span>
+        <div>
+          <h1 id="t-client">סטודיו נגה עיצוב פנים</h1>
+          <div class="meta">
+            <span class="ltr">noga-studio.co.il</span>
+            <span><i class="ph ph-user-circle"></i>אחראי: גל ארבל</span>
+            <span><i class="ph ph-arrows-clockwise"></i>עודכן לפני שעה, על בסיס 23 מקורות</span>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-soft" data-go="ingest"><i class="ph-bold ph-plus"></i>הוסף ידע</button>
+          <button class="btn btn-primary" data-go="ask"><i class="ph-bold ph-sparkle"></i>שאל על הלקוח</button>
+        </div>
+      </div>
+
+      <div class="tabs rv" role="tablist" aria-label="מרחב הלקוח">
+        <span class="tab-ind" id="tabInd"></span>
+        <button class="tab" role="tab" aria-selected="true" data-tab="ov">סקירה</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="dec">החלטות</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="tl">ציר זמן</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="pref">ידע והעדפות</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="cov">מקורות וכיסוי</button>
+      </div>
+
+      <div class="pane" data-pane="ov">
+        <div class="ov">
+          <article class="card state rv">
+            <div class="card-head"><h2>המצב עכשיו</h2></div>
+            <div class="state-grp">
+              <div class="state-row" data-src="meet"><span class="sq sm"><i class="ph-fill ph-hammer"></i></span><div><b>בטיפול</b><p>עיצוב עמוד הבית, בן ו-Navoto. סטטוס חי ב-Monday</p></div></div>
+              <div class="state-row" data-src="doc"><span class="sq sm"><i class="ph-fill ph-hourglass-medium"></i></span><div><b>מחכה ללקוח</b><p>תשובה על הצעת שלב א', כבר 14 ימים</p></div></div>
+              <div class="state-row" data-src="dec"><span class="sq sm"><i class="ph-fill ph-prohibit"></i></span><div><b>חסם</b><p>אין עדיין תמונות של הפרויקטים. נגה אמרה "עד סוף החודש"</p></div></div>
+            </div>
+          </article>
+          <article class="card prop rv">
+            <div class="card-head"><h2>איך ההצעה התפתחה</h2><span class="tag" data-src="doc"><i class="ph-fill ph-file-text"></i>3 גרסאות</span></div>
+            <div class="chart-wrap"><svg class="pchart" id="pchart" viewBox="0 0 640 300" role="img" aria-label="מחיר ההצעה לפי גרסה: 24,000, 18,500, 12,900 ש&quot;ח"></svg></div>
+          </article>
+          <article class="card decs rv">
+            <div class="card-head"><h2>החלטות תקפות</h2><button class="btn btn-sm btn-soft" data-tab-go="dec">כל ההחלטות</button></div>
+            <div class="dlist">
+              <div class="drow" data-src="dec"><span class="sq sm"><i class="ph-fill ph-seal-check"></i></span><div><p>בונים את האתר בשני שלבים, קודם העמודים המרכזיים</p><p class="muted">פגישה 22.9, אושר ע"י דני</p></div><span class="tag solid" data-src="dec">מאושר</span></div>
+              <div class="drow" data-src="meet"><span class="sq sm"><i class="ph-fill ph-chat-circle-text"></i></span><div><p>הלקוחה מעדיפה פלטפורמה שהיא יכולה לערוך לבד</p><p class="muted">פגישה 1.9, אמירת לקוחה</p></div><span class="tag outline">בקשה</span></div>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <div class="pane" data-pane="dec" hidden>
+        <div class="dlist">
+          <div class="drow" data-src="dec"><span class="sq sm"><i class="ph-fill ph-seal-check"></i></span><div><p>בונים את האתר בשני שלבים, קודם העמודים המרכזיים</p><p class="muted">פגישה 22.9, אושר ע"י דני. מחליף את ההחלטה מ-1.9</p></div><span class="tag solid" data-src="dec">מאושר</span></div>
+          <div class="drow" data-src="meet"><span class="sq sm"><i class="ph-fill ph-chat-circle-text"></i></span><div><p>הלקוחה מעדיפה פלטפורמה שהיא יכולה לערוך לבד</p><p class="muted">פגישה 1.9, אמירת לקוחה</p></div><span class="tag outline">בקשה</span></div>
+          <div class="drow" data-src="wa"><span class="sq sm"><i class="ph-fill ph-handshake"></i></span><div><p>הבלוג נדחה לשלב ב'</p><p class="muted">וואטסאפ 17.9, הסכמה עקרונית של נגה</p></div><span class="tag" data-src="wa">הסכמה עקרונית</span></div>
+          <div class="drow old" data-src="doc"><span class="sq sm"><i class="ph-fill ph-arrow-u-up-left"></i></span><div><p>אתר מלא כולל בלוג ו-SEO לשנה</p><p class="muted">הצעה 1.9. הוחלף ב-22.9</p></div><span class="tag outline">הוחלף</span></div>
+        </div>
+      </div>
+
+      <div class="pane" data-pane="tl" hidden>
+        <div class="tl">
+          <div class="tl-item" data-src="doc"><span class="sq"><i class="ph-fill ph-file-text"></i></span><div class="card"><span class="when">16 בספטמבר</span><b>נשלחה הצעה לשלב א', 12,900 ש"ח</b><p>PDF, גרסה 3. עדיין בלי תשובה</p></div></div>
+          <div class="tl-item" data-src="wa"><span class="sq"><i class="ph-fill ph-whatsapp-logo"></i></span><div class="card"><span class="when">9 בספטמבר</span><b>נגה ביקשה הצעה מצומצמת</b><p>"אפשר לקבל הצעה מצומצמת רק לשלב א'?"</p></div></div>
+          <div class="tl-item" data-src="meet"><span class="sq"><i class="ph-fill ph-microphone"></i></span><div class="card"><span class="when">8 בספטמבר</span><b>פגישת הצגת הצעה, 18,500 ש"ח</b><p>הסתייגות מהמחיר, בקשה לחלק לשלבים</p></div></div>
+          <div class="tl-item" data-src="meet"><span class="sq"><i class="ph-fill ph-microphone"></i></span><div class="card"><span class="when">1 בספטמבר</span><b>פגישת היכרות</b><p>מטרות, קהל יעד, דוגמאות שהיא אוהבת</p></div></div>
+        </div>
+      </div>
+
+      <div class="pane" data-pane="pref" hidden>
+        <div class="pref-grid">
+          <article class="card"><div class="card-head"><h2><span class="sq sm" data-src="wa"><i class="ph-fill ph-heart"></i></span>מה חשוב לה</h2></div>
+            <div class="pref"><div><p>טון חם ואישי, לא תאגידי</p><p class="muted">פגישה 1.9, לכל הלקוח</p></div></div>
+            <div class="pref"><div><p>להראות פרויקטים אמיתיים לפני כל טקסט</p><p class="muted">פגישה 8.9, לפרויקט האתר</p></div></div>
+          </article>
+          <article class="card"><div class="card-head"><h2><span class="sq sm" data-src="dec"><i class="ph-fill ph-x-circle"></i></span>מה נפסל</h2></div>
+            <div class="pref"><div><p>בלי תמונות סטוק, בשום עמוד</p><p class="muted">פגישה 1.9, אמירה מפורשת</p></div></div>
+            <div class="pref"><div><p>לא לכתוב "יוקרה". היא מרגישה שזה מרחיק לקוחות</p><p class="muted">וואטסאפ 17.9</p></div></div>
+          </article>
+        </div>
+      </div>
+
+      <div class="pane" data-pane="cov" hidden>
+        <div class="cov">
+          <div class="card" data-src="meet"><span class="sq"><i class="ph-fill ph-microphone"></i></span><div><b>פגישות</b><span>4 פגישות, אחרונה 22.9</span></div><i class="ph-fill ph-check-circle st" style="color:var(--green);font-size:26px"></i></div>
+          <div class="card" data-src="wa"><span class="sq"><i class="ph-fill ph-whatsapp-logo"></i></span><div><b>וואטסאפ</b><span>ייצוא אחרון 17.9</span></div><i class="ph-fill ph-warning-circle st" style="color:#D9A800;font-size:26px"></i></div>
+          <div class="card" data-src="doc"><span class="sq"><i class="ph-fill ph-file-text"></i></span><div><b>מסמכים</b><span>7 קבצים, 3 גרסאות הצעה</span></div><i class="ph-fill ph-check-circle st" style="color:var(--green);font-size:26px"></i></div>
+          <div class="card" data-src="mail"><span class="sq"><i class="ph-fill ph-envelope-simple"></i></span><div><b>מייל</b><span>יחובר בשלב 5</span></div><i class="ph ph-clock st" style="color:var(--ink-3);font-size:26px"></i></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ INGEST ============ -->
+    <section class="screen" data-view="ingest" hidden aria-labelledby="t-ingest">
+      <div class="page-head rv"><div><h1 id="t-ingest">קליטת מידע</h1><p>גרור לכאן כל דבר שקשור ללקוח. המוח יקרא, יציע לאיזה לקוח זה שייך, ויבקש ממך לאשר את מה שחשוב.</p></div></div>
+
+      <label class="drop rv" id="drop" for="file">
+        <svg class="dash" aria-hidden="true"><rect x="1.5" y="1.5" rx="31" ry="31" width="calc(100% - 3px)" height="calc(100% - 3px)"/></svg>
+        <span class="drop-ic"><i class="ph-bold ph-cloud-arrow-up"></i></span>
+        <h2>גרור לכאן ייצוא וואטסאפ, תמלול או מסמך</h2>
+        <p>או לחץ כדי לבחור קובץ. אפשר גם כמה קבצים ביחד, המוח יפריד ביניהם.</p>
+        <span class="formats"><span class="tag outline">.zip</span><span class="tag outline">.txt</span><span class="tag outline">.docx</span><span class="tag outline">.pdf</span><span class="tag outline">.m4a</span><span class="tag outline">צילום מסך</span></span>
+        <input id="file" type="file" multiple hidden>
+      </label>
+
+      <div class="how">
+        <article class="card rv" data-src="wa"><span class="sq"><i class="ph-fill ph-whatsapp-logo"></i></span><h2>שיחת וואטסאפ</h2>
+          <ol><li>פתח את השיחה עם הלקוח</li><li>לחץ על שם השיחה ואז "ייצוא צ'אט"</li><li>בחר "כולל מדיה" וגרור לכאן את קובץ ה-zip</li></ol></article>
+        <article class="card rv" data-src="meet"><span class="sq"><i class="ph-fill ph-microphone"></i></span><h2>פגישה מ-Timeless</h2>
+          <ol><li>פתח את הפגישה ב-Timeless</li><li>Export ואז Download transcript</li><li>גרור לכאן. הדוברים והזמנים נשמרים</li></ol></article>
+        <article class="card rv" data-src="doc"><span class="sq"><i class="ph-fill ph-file-text"></i></span><h2>מסמך או הצעה</h2>
+          <ol><li>הצעות מחיר, בריפים, מצגות ודוחות</li><li>גם צילום מסך של שיחה עובד</li><li>גרסה חדשה של הצעה מתחברת לקודמת</li></ol></article>
+        <article class="card rv" data-src="dec" id="recCard"><span class="sq"><i class="ph-fill ph-microphone-stage"></i></span><h2>עדכון קולי</h2>
+          <ol><li>סיימת שיחה? ספר בקול מה קרה</li><li>נשמר כ"דיווח שלך", לא כציטוט של הלקוח</li></ol>
+          <div class="recwave" aria-hidden="true"></div>
+          <button class="btn btn-sm btn-ghost rec" id="recBtn"><i class="ph-fill ph-record"></i><span>התחל הקלטה</span></button></article>
+      </div>
+
+      <h2 class="sec-title rv">בתהליך <span class="tag solid" data-src="brain" id="qCount">2</span></h2>
+      <div class="q" id="queue">
+        <article class="card qitem rv" data-src="meet"><span class="sq"><i class="ph-fill ph-microphone"></i></span>
+          <div><b>שיחת היכרות, 29.9 (Timeless)</b><p class="muted">38 דקות, 3 דוברים</p>
+            <div class="steps"><span class="step done"><span class="d"><i class="ph-bold ph-check"></i></span>התקבל</span><span class="step done"><span class="d"><i class="ph-bold ph-check"></i></span>עובד</span><span class="step now"><span class="d"></span>שיוך</span><span class="step"><span class="d"></span>נקלט</span></div>
+            <div class="assign"><p>לא זיהינו לקוח. הדוברים: <b>גל</b>, <b>רותם</b>, <b>אלון</b>. לקוח חדש?</p><button class="btn btn-sm btn-primary">בחר לקוח</button><button class="btn btn-sm btn-ghost">לקוח חדש</button></div>
+          </div></article>
+        <article class="card qitem fail rv" data-src="dec"><span class="sq"><i class="ph-fill ph-waveform"></i></span>
+          <div><b>הקלטה מהטלפון, 27.9</b><p class="muted">תומללו 12 דקות מתוך 31. החלק שנקלט כבר זמין לחיפוש</p></div>
+          <button class="btn btn-sm btn-ghost"><i class="ph ph-arrow-clockwise"></i>נסה שוב</button></article>
+      </div>
+
+      <h2 class="sec-title rv">מקורות מחוברים</h2>
+      <div class="conn">
+        <div class="card rv"><span class="logo-b"><img src="https://cdn.simpleicons.org/google" alt=""></span><div><b>Google</b><span class="on-dot">מחובר, התחברות</span></div></div>
+        <div class="card rv"><span class="logo-b"><img src="https://cdn.simpleicons.org/gmail" alt=""></span><div><b>Gmail ויומן</b><span>שלב 5</span></div></div>
+        <div class="card rv"><span class="logo-b"><i class="ph-fill ph-microsoft-outlook-logo" style="color:#0A64C8"></i></span><div><b>Outlook</b><span>שלב 6</span></div></div>
+        <div class="card rv"><span class="logo-b"><img src="https://cdn.simpleicons.org/asana" alt=""></span><div><b>Asana</b><span>שלב 7</span></div></div>
+        <div class="card rv"><span class="logo-b"><i class="ph-fill ph-circles-three" style="color:#FF3D57"></i></span><div><b>Monday</b><span>שלב 7</span></div></div>
+        <div class="card rv"><span class="logo-b"><img src="https://cdn.simpleicons.org/whatsapp" alt=""></span><div><b>בוט וואטסאפ</b><span>שלב 8</span></div></div>
+      </div>
+    </section>
+
+    <!-- ============ KNOWLEDGE ============ -->
+    <section class="screen" data-view="knowledge" hidden aria-labelledby="t-know">
+      <div class="page-head rv"><div><h1 id="t-know">ידע החברה</h1><p>נהלים, תבניות ולקחים. נוהל מאושר תמיד מסומן, כדי שלא יתבלבל עם טיוטה.</p></div></div>
+      <div class="tools rv">
+        <label class="search"><i class="ph ph-magnifying-glass"></i><span class="sr">חיפוש בידע</span><input type="search" placeholder="למשל: לפני עליית אתר"></label>
+        <button class="chip" aria-pressed="true">הכול</button><button class="chip" aria-pressed="false">SEO ו-GEO</button><button class="chip" aria-pressed="false">בניית אתרים</button><button class="chip" aria-pressed="false">תבניות</button><button class="chip" aria-pressed="false">לקחים</button>
+      </div>
+      <div class="kgrid">
+        <article class="card kfeat rv">
+          <div class="card-head"><h2><span class="sq" data-src="dec"><i class="ph-fill ph-rocket-launch"></i></span>צ'קליסט לפני עליית אתר</h2><span class="tag solid" data-src="dec"><i class="ph-fill ph-seal-check"></i>נוהל מאושר</span></div>
+          <div class="kowner"><span class="av dani">דש</span>בעלים: דני שקד. נבדק לאחרונה 12.9.2026</div>
+          <ol class="steps-v"><li>הפניות 301 מכל כתובת באתר הקודם</li><li>כותרות ותיאורים לכל עמוד, בלי כפילויות</li><li>Search Console ו-Analytics מחוברים לפני ההשקה</li><li>בדיקת מהירות במובייל, מעל 85</li></ol>
+          <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn btn-primary"><i class="ph ph-book-open"></i>פתח נוהל</button><button class="btn btn-soft" data-go="ask"><i class="ph ph-sparkle"></i>שאל על הנוהל</button></div>
+        </article>
+        <div class="kside">
+          <article class="card kcard rv" data-src="meet"><span class="sq"><i class="ph-fill ph-magnifying-glass"></i></span><div><b>מחקר מילות מפתח ללקוח חדש</b><p class="muted">מיה הלוי. נבדק 3.9.2026</p><span class="tag" data-src="meet"><i class="ph-fill ph-seal-check"></i>מאושר</span></div></article>
+          <article class="card kcard rv" data-src="doc"><span class="sq"><i class="ph-fill ph-note-pencil"></i></span><div><b>תבנית בריף לכותב תוכן</b><p class="muted">איתי אלימור. עודכן אתמול</p><span class="tag outline"><i class="ph ph-pencil-simple"></i>טיוטה</span></div></article>
+          <article class="card kcard rv" data-src="wa"><span class="sq"><i class="ph-fill ph-lightbulb"></i></span><div><b>לקח: מעבר מוורדפרס בלי לאבד דירוגים</b><p class="muted">מתוך 3 פרויקטים. גל ארבל</p><span class="tag" data-src="wa"><i class="ph ph-graduation-cap"></i>לקח</span></div></article>
+        </div>
+      </div>
+    </section>
+
+    </div>
+  </main>
+
+  <nav class="dock" aria-label="ניווט">
+    <a href="#today" data-nav="today"><i class="ph ph-sun-horizon"></i>היום</a>
+    <a href="#clients" data-nav="clients"><i class="ph ph-buildings"></i>לקוחות</a>
+    <a href="#ask" data-nav="ask"><i class="ph ph-sparkle"></i>שאל</a>
+    <a href="#knowledge" data-nav="knowledge"><i class="ph ph-books"></i>ידע</a>
+    <a href="#ingest" data-nav="ingest"><i class="ph ph-tray-arrow-down"></i>קליטה</a>
+  </nav>
+</div>
+
+<!-- ======================= OVERLAYS ======================= -->
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-modal="true" role="dialog" aria-labelledby="drawerTitle" inert>
+  <div class="drawer-head"><span class="sq" id="drawerIc" data-src="meet"><i class="ph-fill ph-microphone"></i></span><div><b id="drawerTitle">פגישה, 8 בספטמבר</b><span id="drawerSub">תמלול מ-Timeless</span></div><button class="icon-btn" data-close aria-label="סגירה"><i class="ph ph-x"></i></button></div>
+  <div class="drawer-body" id="drawerBody"></div>
+  <div class="drawer-foot" id="drawerFoot"></div>
+</aside>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle" inert>
+  <h2 id="mTitle">טיוטת הודעת המשך</h2>
+  <p class="muted">המוח ניסח, אתה מחליט. שום דבר לא נשלח בלי הלחיצה שלך.</p>
+  <div class="mail">
+    <div class="mail-row"><span>אל</span><b>נגה לוי</b><span class="ltr muted">noga@noga-studio.co.il</span></div>
+    <div class="mail-row"><span>נושא</span><b>ההצעה לשלב א' ודוגמאות לעמוד שירות</b></div>
+    <label class="sr" for="mBody">גוף ההודעה</label>
+    <textarea id="mBody">היי נגה,
+רציתי לחזור אלייך לגבי ההצעה לשלב א' ששלחנו ב-16 בספטמבר. מצרף גם את הדוגמאות לעמוד שירות שהבטחתי בפגישה האחרונה.
+אם נוח לך, אשמח לסגור את הפרטים בשיחה של רבע שעה השבוע.
+גל</textarea>
+  </div>
+  <p class="safe"><i class="ph-fill ph-shield-check"></i>לא נכללו מחירי עלות והערות פנימיות</p>
+  <div class="modal-actions">
+    <button class="btn btn-primary" id="sendMail"><i class="ph-bold ph-paper-plane-tilt"></i><span>אשר ושלח מה-Gmail שלי</span></button>
+    <button class="btn btn-ghost" data-close>ביטול</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" hidden><span class="sq sm"><i class="ph-bold ph-check"></i></span><span id="toastText">בוצע</span></div>
+
+<script>
+(() => {
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const hasG = typeof gsap !== 'undefined';
+const root = document.documentElement;
+
+/* ---------- theme ---------- */
+const setTheme = (t) => {
+  root.dataset.theme = t;
+  $$('.js-logo').forEach(i => i.src = t === 'dark' ? 'assets/logo-dark.png' : 'assets/logo.png');
+  $$('.js-theme i').forEach(i => i.className = t === 'dark' ? 'ph ph-sun' : 'ph ph-moon');
+  try { localStorage.setItem('sb-theme', t); } catch (e) {}
+};
+let saved = null; try { saved = localStorage.getItem('sb-theme'); } catch (e) {}
+setTheme(saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+$$('.js-theme').forEach(b => b.addEventListener('click', () => {
+  const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+  document.startViewTransition && !reduce ? document.startViewTransition(() => setTheme(next)) : setTheme(next);
+}));
+
+/* ---------- reveal ---------- */
+function reveal(scope) {
+  const els = $$('.rv', scope).filter(e => e.offsetParent !== null);
+  if (!hasG || reduce) return;
+  gsap.fromTo(els, { opacity: 0, y: 16, scale: .985 }, { opacity: 1, y: 0, scale: 1, duration: .6, ease: 'expo.out', stagger: .05, clearProps: 'transform,opacity' });
+}
+const notes = {};
+function annotate(id, color) {
+  const el = document.getElementById(id);
+  if (!el || !window.RoughNotation) return;
+  if (!notes[id]) notes[id] = RoughNotation.annotate(el, { type: 'highlight', color, animationDuration: reduce ? 0 : 900, multiline: false, iterations: 1, padding: [2, 6] });
+  notes[id].hide();
+  setTimeout(() => notes[id].show(), reduce ? 0 : 1100);
+}
+
+/* ---------- routing ---------- */
+const titles = { today: 'היום שלי', clients: 'לקוחות', client: 'סטודיו נגה', ask: 'שאל את המוח', knowledge: 'ידע החברה', ingest: 'קליטת מידע' };
+const views = Object.keys(titles);
+let current = null;
+function render(name) {
+  if (typeof closeAll === 'function') closeAll();
+  const login = $('[data-screen="login"]'), app = $('[data-screen="app"]');
+  if (name === 'login') { login.hidden = false; app.hidden = true; current = 'login'; startLogin(); return; }
+  login.hidden = true; app.hidden = false;
+  $$('[data-view]').forEach(v => v.hidden = v.dataset.view !== name);
+  const navKey = name === 'client' ? 'clients' : name;
+  $$('[data-nav]').forEach(a => a.dataset.nav === navKey ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'));
+  $('#topTitle').textContent = titles[name];
+  current = name;
+  window.scrollTo({ top: 0, behavior: 'instant' });
+  const view = $(`[data-view="${name}"]`);
+  reveal(view);
+  if (name === 'today') { annotate('hl-today', 'color-mix(in srgb, #01B3FD 38%, transparent)'); drawBars(); countUp(); }
+  if (name === 'ask') streamAnswer();
+  if (name === 'client') { moveInd(); drawChart(); }
+  if (name === 'clients') renderClients();
+}
+function go(name) {
+  if (name === current) return;
+  const run = () => render(name);
+  if (location.hash !== '#' + name) history.pushState(null, '', '#' + name);
+  if (document.startViewTransition && !reduce) document.startViewTransition(run); else run();
+}
+window.addEventListener('popstate', () => render(location.hash.slice(1) || 'login'));
+document.addEventListener('click', (e) => {
+  const a = e.target.closest('a[data-nav]');
+  if (a) { e.preventDefault(); go(a.dataset.nav); return; }
+  const g = e.target.closest('[data-go]');
+  if (g) { e.preventDefault(); closeAll(); go(g.dataset.go); }
+});
+$$('[data-go-form]').forEach(f => f.addEventListener('submit', (e) => { e.preventDefault(); go(f.dataset.goForm); }));
+
+/* ---------- login art ---------- */
+let loginStarted = false;
+function startLogin() {
+  reveal($('[data-screen="login"]'));
+  annotate('hl-login', 'color-mix(in srgb, #FDD509 70%, transparent)');
+  requestAnimationFrame(drawLines);
+  if (loginStarted) return; loginStarted = true;
+  initDots($('#dots'));
+  if (hasG && !reduce) {
+    gsap.fromTo('#artCore', { opacity: 0, scale: .9 }, { opacity: 1, scale: 1, duration: 1, ease: 'expo.out', delay: .15 });
+    gsap.fromTo('.float', { opacity: 0, y: 20, scale: .95 }, { opacity: 1, y: 0, scale: 1, duration: .8, ease: 'expo.out', stagger: .12, delay: .45 });
+  }
+}
+function drawLines() {
+  const art = $('.login-art'), svg = $('#artLines'), core = $('#artCore');
+  if (!art || art.offsetParent === null) return;
+  const A = art.getBoundingClientRect(), C = core.getBoundingClientRect();
+  const cx = C.left + C.width / 2 - A.left, cy = C.top + C.height / 2 - A.top;
+  svg.setAttribute('viewBox', `0 0 ${A.width} ${A.height}`);
+  svg.innerHTML = '';
+  $$('.float', art).forEach((f, i) => {
+    if (getComputedStyle(f).display === 'none') return;
+    const R = f.getBoundingClientRect();
+    const fx = R.left + R.width / 2 - A.left, fy = (R.top + R.height / 2 - A.top) < cy ? R.bottom - A.top : R.top - A.top;
+    const mx = (fx + cx) / 2;
+    const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    p.setAttribute('d', `M${fx},${fy} C${fx},${(fy + cy) / 2} ${mx},${cy} ${cx},${cy}`);
+    p.style.stroke = f.dataset.line;
+    svg.appendChild(p);
+    const len = p.getTotalLength();
+    p.style.strokeDasharray = len; p.style.strokeDashoffset = reduce ? 0 : len;
+    if (!reduce) p.animate([{ strokeDashoffset: len }, { strokeDashoffset: 0 }], { duration: 1100, delay: 700 + i * 140, easing: 'cubic-bezier(.77,0,.175,1)', fill: 'forwards' });
+  });
+}
+let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (current === 'login') drawLines(); if (current === 'client') moveInd(); }, 120); });
+
+/* dots background (from Gal's widget: interactive-dots-grid) */
+function initDots(rootEl) {
+  const CAP = .6, MIX = 1.4, LIT = 3, TAU = Math.PI * 2;
+  const cs = getComputedStyle(rootEl);
+  const rgb = (c) => { const d = document.createElement('i'); d.style.color = c; rootEl.append(d); const m = getComputedStyle(d).color.match(/\d+/g).map(Number); d.remove(); return m; };
+  const s = { cell: +rootEl.dataset.dtSpacing || 28, radius: +rootEl.dataset.dtGlowRadius || 280, follow: .12, fade: .18, dot: parseFloat(cs.getPropertyValue('--dot')) || 3, dotColor: rgb(cs.getPropertyValue('--dot-color')), glowColor: rgb(cs.getPropertyValue('--glow-color')) };
+  s.active = s.dot * LIT;
+  const canvas = document.createElement('canvas'); canvas.setAttribute('aria-hidden', 'true');
+  canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none';
+  rootEl.prepend(canvas); const ctx = canvas.getContext('2d');
+  let W = 0, H = 0, dpr = 1, cols = 0, rows = 0, ox = 0, oy = 0, vals = new Float32Array(0), last = 0, strength = 0, dirty = true;
+  const target = { x: 0, y: 0, inside: false }, pos = { x: 0, y: 0, has: false };
+  function layout() { const r = rootEl.getBoundingClientRect(); W = Math.max(1, Math.round(r.width)); H = Math.max(1, Math.round(r.height)); dpr = Math.min(2, devicePixelRatio || 1); canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr); cols = Math.floor(W / s.cell) + 1; rows = Math.floor(H / s.cell) + 1; ox = (W - (cols - 1) * s.cell) / 2; oy = (H - (rows - 1) * s.cell) / 2; if (vals.length !== cols * rows) vals = new Float32Array(cols * rows); dirty = true; }
+  function point(cx, cy) { const r = rootEl.getBoundingClientRect(), x = cx - r.left, y = cy - r.top; target.x = x; target.y = y; target.inside = x >= 0 && y >= 0 && x <= r.width && y <= r.height; if (!pos.has || strength < .01) { pos.x = x; pos.y = y; pos.has = true; } }
+  const leave = () => { target.inside = false; };
+  addEventListener('pointermove', (e) => point(e.clientX, e.clientY));
+  addEventListener('touchstart', (e) => { const t = e.touches[0]; if (t) point(t.clientX, t.clientY); }, { passive: true });
+  addEventListener('touchmove', (e) => { const t = e.touches[0]; if (t) point(t.clientX, t.clientY); }, { passive: true });
+  addEventListener('touchend', leave); addEventListener('blur', leave); root.addEventListener('pointerleave', leave);
+  new ResizeObserver(layout).observe(rootEl);
+  (function draw(t) {
+    requestAnimationFrame(draw);
+    if (current !== 'login') return;
+    const dt = Math.min(50, last ? t - last : 16.67) / 16.67; last = t;
+    const kF = reduce ? 1 : 1 - Math.pow(1 - s.follow, dt), kD = reduce ? 1 : 1 - Math.pow(1 - s.fade, dt);
+    pos.x += (target.x - pos.x) * kF; pos.y += (target.y - pos.y) * kF;
+    strength += ((target.inside ? 1 : 0) - strength) * kD; if (strength < .001) strength = 0;
+    const R = Math.min(s.radius, Math.min(W, H) * CAP), active = strength > 0;
+    if (!active && !dirty && !vals.some(v => v > 0)) return;
+    dirty = false;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
+    const [dr, dg, db] = s.dotColor, [gr, gg, gb] = s.glowColor, base = s.dot / 2, grow = (s.active - s.dot) / 2;
+    ctx.fillStyle = `rgb(${dr},${dg},${db})`; ctx.beginPath(); const lit = [];
+    for (let j = 0; j < rows; j++) { const y = oy + j * s.cell; for (let i = 0; i < cols; i++) { const x = ox + i * s.cell, n = j * cols + i; let goal = 0; if (active) { const d = Math.hypot(x - pos.x, y - pos.y); if (d < R) goal = strength * (1 - d / R); } let v = vals[n] + (goal - vals[n]) * kD; if (v < .003) v = 0; vals[n] = v; if (v === 0) { ctx.moveTo(x + base, y); ctx.arc(x, y, base, 0, TAU); } else lit.push(x, y, v); } }
+    ctx.fill();
+    for (let k = 0; k < lit.length; k += 3) { const v = lit[k + 2], c = Math.min(1, v * MIX), r = base + grow * v; ctx.fillStyle = `rgb(${Math.round(dr + (gr - dr) * c)},${Math.round(dg + (gg - dg) * c)},${Math.round(db + (gb - db) * c)})`; ctx.beginPath(); ctx.arc(lit[k], lit[k + 1], r, 0, TAU); ctx.fill(); }
+  })(performance.now());
+  layout();
+}
+
+/* ---------- today: bars + count ---------- */
+const weeks = [[12, 18, 9, 4], [15, 22, 11, 6], [10, 16, 14, 3], [14, 20, 8, 4]];
+const srcKeys = ['meet', 'wa', 'doc', 'dec'];
+function drawBars() {
+  const box = $('#bars'); const max = Math.max(...weeks.map(w => w.reduce((a, b) => a + b, 0)));
+  box.innerHTML = weeks.map(w => {
+    const tot = w.reduce((a, b) => a + b, 0);
+    return `<div class="bar" style="height:${tot / max * 100}%">${w.map((v, i) => `<span class="seg" data-src="${srcKeys[i]}" style="flex:${v}"></span>`).join('')}</div>`;
+  }).join('');
+  if (hasG && !reduce) gsap.fromTo('#bars .bar', { scaleY: 0, transformOrigin: 'bottom' }, { scaleY: 1, duration: .9, ease: 'expo.out', stagger: .08, delay: .3 });
+}
+function countUp() {
+  $$('[data-count]').forEach(el => {
+    const to = +el.dataset.count; if (!hasG || reduce) { el.textContent = to; return; }
+    const o = { v: 0 }; gsap.to(o, { v: to, duration: 1.2, ease: 'expo.out', delay: .3, onUpdate: () => el.textContent = Math.round(o.v) });
+  });
+}
+
+/* ---------- ask: stream ---------- */
+let streamed = false;
+function streamAnswer() {
+  if (streamed || !hasG || reduce) return; streamed = true;
+  $$('#answer .stream').forEach(p => {
+    [...p.childNodes].forEach(n => {
+      if (n.nodeType !== 3) return;
+      const frag = document.createDocumentFragment();
+      n.textContent.split(/(\s+)/).forEach(w => { if (!w) return; if (/^\s+$/.test(w)) frag.append(w); else { const s = document.createElement('span'); s.className = 'w'; s.textContent = w; frag.append(s); } });
+      n.replaceWith(frag);
+    });
+  });
+  const tl = gsap.timeline({ delay: .5 });
+  tl.fromTo('#answer .w, #answer .cite', { opacity: 0, filter: 'blur(4px)' }, { opacity: 1, filter: 'blur(0px)', duration: .35, ease: 'power2.out', stagger: .018 })
+    .fromTo('#answer .claim .tag, #answer .gap-note, #answer .src, #answer .follow .btn', { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: .5, ease: 'expo.out', stagger: .05, clearProps: 'transform' }, '-=0.6');
+}
+
+/* citations light up matching source */
+document.addEventListener('pointerover', (e) => {
+  const c = e.target.closest('.cite'); $$('.src.lit').forEach(s => s.classList.remove('lit'));
+  if (c) $(`.src[data-open="${c.dataset.cite}"]`)?.classList.add('lit');
+});
+
+/* ---------- drawer / modal ---------- */
+const drawer = $('#drawer'), scrim = $('#scrim'), modal = $('#modal');
+const sources = {
+  1: { src: 'meet', ic: 'ph-microphone', title: 'פגישה, 8 בספטמבר', sub: 'תמלול מ-Timeless, 46 דקות',
+    body: () => `<div class="wave" id="wave"></div><div class="wave-cap"><span class="num">23:12</span><span>נגה, גל, עמרי</span><span class="num">46:05</span></div>
+      <div class="line"><span class="t num">23:12</span><div><b>גל:</b> אז לגבי ההצעה, מדובר ב-18,500 ש"ח לאתר המלא, כולל התאמה ל-SEO.</div></div>
+      <div class="line key"><span class="t num">23:41</span><div><b>נגה:</b> הכיוון ממש מתאים לי, אני אוהבת את מה שהראיתם. אבל האמת שזה יותר ממה שתכננתי להוציא עכשיו.</div></div>
+      <div class="line key"><span class="t num">24:05</span><div><b>נגה:</b> יש אפשרות לחלק את זה לשלבים?</div></div>
+      <div class="line"><span class="t num">24:19</span><div><b>גל:</b> בטח. אפשר לבנות שלב ראשון עם העמודים המרכזיים. אני אכין הצעה.</div></div>
+      <div class="line"><span class="t num">24:40</span><div><b>עמרי:</b> בואו נראה את זה כתוב ונחליט.</div></div>`,
+    foot: `<button class="btn btn-primary"><i class="ph-fill ph-play"></i>נגן מדקה 23:41</button><button class="btn btn-ghost"><i class="ph ph-arrow-square-out"></i>פתח ב-Timeless</button>` },
+  2: { src: 'wa', ic: 'ph-whatsapp-logo', title: 'הודעה מנגה, 9 בספטמבר', sub: 'ייצוא WhatsApp, נקלט 17.9',
+    body: () => `<div class="line"><span class="t num">09:10</span><div><b>נגה:</b> היי גל, תודה על אתמול, היה ממש טוב.</div></div>
+      <div class="line key" style="--cyan:var(--green)"><span class="t num">09:12</span><div><b>נגה:</b> אפשר לקבל הצעה מצומצמת רק לשלב א'? נדבר בטלפון באמצע שבוע הבא.</div></div>
+      <div class="line"><span class="t num">09:40</span><div><b>גל:</b> בשמחה, אשלח עד סוף השבוע.</div></div>`,
+    foot: `<button class="btn btn-ghost"><i class="ph ph-chats"></i>כל השיחה</button>` },
+  3: { src: 'doc', ic: 'ph-file-pdf', title: 'הצעת מחיר, גרסה 3', sub: 'PDF, נשלח 16.9',
+    body: () => `<div class="brief-sec" data-src="doc"><h4><i class="ph-fill ph-file-text"></i>מה בהצעה</h4><ul><li>שלב א': עמוד בית, אודות, 3 עמודי שירות, צור קשר</li><li>12,900 ש"ח, 5 שבועות עבודה</li><li>שלב ב' (בלוג ו-SEO) יתומחר בנפרד</li></ul></div>
+      <div class="brief-sec" data-src="dec"><h4><i class="ph-fill ph-git-diff"></i>מה השתנה מגרסה 2</h4><ul><li>ירד: בלוג, 6 עמודי שירות נוספים</li><li>המחיר ירד ב-5,600 ש"ח</li></ul></div>`,
+    foot: `<button class="btn btn-ghost"><i class="ph ph-download-simple"></i>הורדה</button><button class="btn btn-soft" data-go="client"><i class="ph ph-git-diff"></i>השוואת גרסאות</button>` },
+  brief: { src: 'brain', ic: 'ph-lightning', title: 'תדריך: סטודיו נגה', sub: 'היום 10:30, על בסיס 23 מקורות',
+    body: () => `<div class="brief-sec" data-src="meet"><h4><i class="ph-fill ph-target"></i>מטרת הפגישה</h4><ul><li>לסגור את שלב א' ולתאם לוח זמנים לתמונות</li></ul></div>
+      <div class="brief-sec" data-src="meet"><h4><i class="ph-fill ph-clock-counter-clockwise"></i>הפגישה הקודמת, 22.9</h4><ul><li>הסכמתם לבנות בשני שלבים (דני אישר)</li><li>נגה אמרה שהתמונות יגיעו "עד סוף החודש"</li></ul></div>
+      <div class="brief-sec" data-src="dec"><h4><i class="ph-fill ph-flag"></i>מה הבטחת</h4><ul><li>דוגמאות לעמוד שירות. לא נמצא תיעוד שנשלחו</li></ul></div>
+      <div class="brief-sec" data-src="doc"><h4><i class="ph-fill ph-question"></i>שווה לשאול</h4><ul><li>מי מחליט על התקציב, נגה או עמרי?</li><li>יש תאריך השקה שהם מכוונים אליו?</li></ul></div>
+      <div class="gap-note" style="margin-top:0"><i class="ph-fill ph-warning-circle"></i><div>אין תיעוד לשיחת הטלפון מ-15.9. יכול להיות שחסר משהו.</div></div>`,
+    foot: `<button class="btn btn-primary" data-modal="mail"><i class="ph ph-envelope-simple"></i>הכן את הדוגמאות לשליחה</button><button class="btn btn-ghost" data-go="client">מרחב הלקוח</button>` }
+};
+function openDrawer(key) {
+  const d = sources[key]; if (!d) return;
+  const ic = $('#drawerIc'); ic.dataset.src = d.src; ic.innerHTML = `<i class="ph-fill ${d.ic}"></i>`;
+  $('#drawerTitle').textContent = d.title; $('#drawerSub').textContent = d.sub;
+  $('#drawerBody').innerHTML = d.body(); $('#drawerFoot').innerHTML = d.foot;
+  const w = $('#wave'); if (w) { w.innerHTML = Array.from({ length: 64 }, (_, i) => `<i class="${i > 30 && i < 34 ? 'on' : ''}" style="height:${18 + Math.abs(Math.sin(i * 1.7) * 60) + (i % 5) * 4}%"></i>`).join(''); }
+  drawer.inert = false; drawer.classList.add('on'); scrim.classList.add('on');
+  if (hasG && !reduce) gsap.fromTo('#drawerBody > *', { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: .5, ease: 'expo.out', stagger: .04, delay: .15 });
+  setTimeout(() => $('[data-close]', drawer).focus(), 50);
+}
+function openModal() { modal.inert = false; modal.classList.add('on'); scrim.classList.add('on'); drawer.classList.remove('on'); drawer.inert = true; setTimeout(() => $('#mBody').focus(), 60); }
+function closeAll() { drawer.classList.remove('on'); modal.classList.remove('on'); scrim.classList.remove('on'); drawer.inert = true; modal.inert = true; }
+document.addEventListener('click', (e) => {
+  const o = e.target.closest('[data-open]'); if (o) openDrawer(o.dataset.open);
+  const c = e.target.closest('.cite'); if (c) openDrawer(c.dataset.cite);
+  const b = e.target.closest('[data-drawer]'); if (b) openDrawer(b.dataset.drawer);
+  if (e.target.closest('[data-modal]')) openModal();
+  if (e.target.closest('[data-close]') || e.target === scrim) closeAll();
+});
+addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAll(); });
+
+const toast = $('#toast'); let tt;
+function showToast(t) { $('#toastText').textContent = t; toast.hidden = false; clearTimeout(tt); tt = setTimeout(() => toast.hidden = true, 3200); }
+$('#sendMail').addEventListener('click', () => { closeAll(); showToast('ההודעה נשלחה מה-Gmail שלך ונשמרה בציר הזמן של הלקוח'); });
+
+/* ---------- clients ---------- */
+const clients = [
+  { n: 'סטודיו נגה עיצוב פנים', d: 'noga-studio.co.il', m: '#0878AA', s: ['web', 'seo'], o: 'gal', last: 'לפני שעה', cov: 86, attn: 'הצעה ממתינה 14 יום', go: true },
+  { n: 'מרפאת שיניים ד"ר אבן', d: 'dr-even.co.il', m: '#0E9E63', s: ['seo', 'geo'], o: 'maya', last: 'שני', cov: 92 },
+  { n: 'קפה רוזמרין', d: 'rozmarin.co.il', m: '#C79A00', s: ['seo'], o: 'itai', last: 'לפני 3 ימים', cov: 64 },
+  { n: 'כרמי ושות\' עורכי דין', d: 'karmi-law.co.il', m: '#311C57', s: ['seo', 'geo'], o: 'gal', last: 'אתמול', cov: 78, attn: 'התחייבות בלי תאריך' },
+  { n: 'אילת כחול, בית ספר לצלילה', d: 'eilat-blue.co.il', m: '#01A3E6', s: ['web'], o: 'ben', last: 'לפני שבוע', cov: 41, attn: 'אין עדכון 3 שבועות' },
+  { n: 'מטבחי אורן', d: 'oren-kitchens.co.il', m: '#F1086A', s: ['seo'], o: 'maya', last: 'שני', cov: 88 },
+  { n: 'ניר שחר אדריכלים', d: 'nirshahar.co.il', m: '#452A73', s: ['geo'], o: 'itai', last: 'לפני 5 ימים', cov: 70 },
+  { n: 'פזית קוסמטיקה', d: 'pazit-beauty.co.il', m: '#D9148A', s: ['web', 'seo'], o: 'gal', last: 'לפני שעה', cov: 73 }
+];
+const svc = { seo: ['קידום SEO', 'meet'], geo: ['GEO', 'wa'], web: ['בניית אתר', 'doc'] };
+const owners = { gal: 'גא', maya: 'מה', itai: 'אא', ben: 'בד', dani: 'דש' };
+const ownerName = { gal: 'גל', maya: 'מיה', itai: 'איתי', ben: 'בן' };
+let filter = 'all', q = '';
+function renderClients() {
+  const list = clients.filter(c => (filter === 'all' || c.s.includes(filter) || (filter === 'mine' && c.o === 'gal') || (filter === 'attn' && c.attn)) && (!q || (c.n + c.d).includes(q)));
+  const C = 2 * Math.PI * 18;
+  $('#cgrid').innerHTML = list.length ? list.map(c => `
+    <button class="client rv" ${c.go ? 'data-go="client"' : ''}>
+      <div class="client-top"><span class="mono" style="--m:${c.m}">${c.n[0]}</span><div><b>${c.n}</b><span class="dom ltr">${c.d}</span></div></div>
+      <div class="client-tags">${c.s.map(k => `<span class="tag" data-src="${svc[k][1]}">${svc[k][0]}</span>`).join('')}</div>
+      ${c.attn ? `<span class="alert-line"><i class="ph-fill ph-warning"></i>${c.attn}</span>` : ''}
+      <div class="client-foot"><span class="av ${c.o}">${owners[c.o]}</span><span>${ownerName[c.o]}, קשר אחרון ${c.last}</span>
+        <span class="ring" title="כיסוי ידע ${c.cov}%"><svg viewBox="0 0 46 46"><circle class="tr" cx="23" cy="23" r="18"/><circle class="fg" cx="23" cy="23" r="18" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - c.cov / 100)}"/></svg><span class="num">${c.cov}</span></span></div>
+    </button>`).join('') : `<div class="empty"><i class="ph ph-magnifying-glass"></i><b>לא מצאנו לקוח בשם הזה</b><p class="muted">נסה דומיין או שם של איש קשר, או פתח לקוח חדש</p></div>`;
+  reveal($('#cgrid'));
+}
+$$('[data-f]').forEach(b => b.addEventListener('click', () => { filter = b.dataset.f; $$('[data-f]').forEach(x => x.setAttribute('aria-pressed', x === b)); renderClients(); }));
+$('#cSearch').addEventListener('input', (e) => { q = e.target.value.trim(); renderClients(); });
+
+/* ---------- client tabs ---------- */
+function moveInd() {
+  const t = $('.tab[aria-selected="true"]'), ind = $('#tabInd'); if (!t || t.offsetParent === null) return;
+  const P = t.parentElement.getBoundingClientRect(), R = t.getBoundingClientRect();
+  ind.style.width = R.width + 'px'; ind.style.transform = `translateX(${R.right - P.right}px)`;
+}
+function selectTab(key) {
+  $$('.tab').forEach(t => t.setAttribute('aria-selected', t.dataset.tab === key));
+  $$('.pane').forEach(p => p.hidden = p.dataset.pane !== key);
+  moveInd();
+  const pane = $(`.pane[data-pane="${key}"]`);
+  if (hasG && !reduce) gsap.fromTo(pane.querySelectorAll('.card, .drow, .tl-item'), { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: .5, ease: 'expo.out', stagger: .05, clearProps: 'transform,opacity' });
+  if (key === 'ov') drawChart();
+}
+$$('.tab').forEach(t => t.addEventListener('click', () => selectTab(t.dataset.tab)));
+$$('[data-tab-go]').forEach(b => b.addEventListener('click', () => selectTab(b.dataset.tabGo)));
+
+/* ---------- proposal chart ---------- */
+function drawChart() {
+  const svg = $('#pchart'); if (!svg || svg.offsetParent === null) return;
+  const data = [{ v: 24000, d: '1.9', l: 'אתר מלא + בלוג + SEO' }, { v: 18500, d: '8.9', l: 'אתר מלא' }, { v: 12900, d: '16.9', l: 'שלב א\' בלבד', p: true }];
+  const W = 640, H = 300, pl = 80, pr = 70, pt = 50, pb = 64, max = 26000, min = 8000;
+  const x = i => W - pr - i * ((W - pl - pr) / (data.length - 1));
+  const y = v => pt + (1 - (v - min) / (max - min)) * (H - pt - pb);
+  const pts = data.map((d, i) => [x(i), y(d.v)]);
+  const line = pts.map((p, i) => (i ? 'L' : 'M') + p[0] + ',' + p[1]).join(' ');
+  const area = line + ` L${pts[pts.length - 1][0]},${H - pb} L${pts[0][0]},${H - pb} Z`;
+  const grid = [10000, 15000, 20000, 25000].map(v => `<line class="grid-l" x1="${pl - 20}" x2="${W - pr + 20}" y1="${y(v)}" y2="${y(v)}"/>`).join('');
+  svg.innerHTML = `<defs><linearGradient id="pgrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6B4FA0" stop-opacity=".28"/><stop offset="1" stop-color="#6B4FA0" stop-opacity="0"/></linearGradient></defs>${grid}
+    <path class="area" d="${area}"/><path class="path" d="${line}"/>
+    ${data.map((d, i) => `<g><circle class="pt ${d.p ? 'pend' : ''}" cx="${pts[i][0]}" cy="${pts[i][1]}" r="9"/>
+      <text class="val num" x="${pts[i][0]}" y="${pts[i][1] - 22}" text-anchor="middle">${d.v.toLocaleString('he-IL')} ₪</text>
+      <text class="ax" x="${pts[i][0]}" y="${H - pb + 28}" text-anchor="middle">גרסה ${i + 1}, ${d.d}</text>
+      <text class="cap" x="${pts[i][0]}" y="${H - pb + 50}" text-anchor="middle">${d.l}${d.p ? ', ממתין' : ''}</text></g>`).join('')}`;
+  const p = svg.querySelector('.path'), len = p.getTotalLength();
+  if (!reduce) {
+    p.style.strokeDasharray = len; p.animate([{ strokeDashoffset: len }, { strokeDashoffset: 0 }], { duration: 1200, easing: 'cubic-bezier(.77,0,.175,1)', fill: 'forwards', delay: 250 });
+    svg.querySelector('.area').animate([{ opacity: 0 }, { opacity: 1 }], { duration: 800, delay: 900, fill: 'backwards' });
+    svg.querySelectorAll('g').forEach((g, i) => g.animate([{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }], { duration: 500, delay: 350 + i * 380, easing: 'cubic-bezier(.23,1,.32,1)', fill: 'backwards' }));
+  }
+}
+
+/* ---------- ingest ---------- */
+const drop = $('#drop'), file = $('#file'), queue = $('#queue');
+['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', (e) => [...e.dataTransfer.files].forEach(addItem));
+file.addEventListener('change', () => { [...file.files].forEach(addItem); file.value = ''; });
+function kindOf(name) {
+  const n = name.toLowerCase();
+  if (/whatsapp|\.zip$/.test(n)) return ['wa', 'ph-whatsapp-logo', 'שיחת וואטסאפ'];
+  if (/\.(m4a|mp3|wav|ogg|opus)$/.test(n)) return ['dec', 'ph-waveform', 'הקלטה'];
+  if (/timeless|transcript|תמלול/.test(n)) return ['meet', 'ph-microphone', 'תמלול פגישה'];
+  return ['doc', 'ph-file-text', 'מסמך'];
+}
+function addItem(f) {
+  const name = typeof f === 'string' ? f : f.name; const [src, ic, label] = kindOf(name);
+  const el = document.createElement('article'); el.className = 'card qitem'; el.dataset.src = src;
+  el.innerHTML = `<span class="sq"><i class="ph-fill ${ic}"></i></span><div><b class="ltr" style="direction:auto">${name}</b><p class="muted">${label}</p>
+    <div class="steps">${['התקבל', 'עובד', 'שיוך', 'נקלט'].map(s => `<span class="step"><span class="d"><i class="ph-bold ph-check"></i></span>${s}</span>`).join('')}</div></div>`;
+  queue.prepend(el);
+  $('#qCount').textContent = queue.children.length;
+  if (hasG && !reduce) gsap.fromTo(el, { opacity: 0, y: -14, scale: .98 }, { opacity: 1, y: 0, scale: 1, duration: .5, ease: 'expo.out' });
+  const steps = $$('.step', el); let i = 0;
+  const tick = () => {
+    steps.forEach((s, k) => { s.classList.toggle('done', k < i); s.classList.toggle('now', k === i); });
+    if (i === 2) {
+      const a = document.createElement('div'); a.className = 'assign';
+      a.innerHTML = `<p>נראה שזה שייך ל<b>סטודיו נגה עיצוב פנים</b>. זיהינו את הדומיין noga-studio.co.il בתוך הקובץ.</p><button class="btn btn-sm btn-primary">כן, שייך</button><button class="btn btn-sm btn-ghost">לקוח אחר</button>`;
+      el.querySelector('div').append(a);
+      if (hasG && !reduce) gsap.fromTo(a, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: .45, ease: 'expo.out' });
+      a.querySelector('.btn-primary').addEventListener('click', () => { i = 4; steps.forEach(s => { s.classList.add('done'); s.classList.remove('now'); }); a.remove(); el.querySelector('.muted').textContent = label + ', נקלט לסטודיו נגה. 2 החלטות חולצו לבדיקה'; showToast('נקלט ושויך לסטודיו נגה'); });
+      return;
+    }
+    i++; setTimeout(tick, reduce ? 50 : 850);
+  };
+  setTimeout(tick, 300);
+}
+/* voice note */
+const recBtn = $('#recBtn'), recCard = $('#recCard'), recWave = $('.recwave');
+recWave.innerHTML = Array.from({ length: 18 }, (_, i) => `<i style="animation-delay:${(i % 6) * -.13}s"></i>`).join('');
+let recT, recS = 0;
+recBtn.addEventListener('click', () => {
+  const on = !recBtn.classList.contains('on');
+  recBtn.classList.toggle('on', on); recCard.classList.toggle('rec-on', on);
+  recBtn.querySelector('i').className = on ? 'ph-fill ph-stop' : 'ph-fill ph-record';
+  if (on) { recS = 0; recBtn.querySelector('span').textContent = 'עצור 0:00'; recT = setInterval(() => { recS++; recBtn.querySelector('span').textContent = `עצור 0:${String(recS).padStart(2, '0')}`; }, 1000); }
+  else { clearInterval(recT); recBtn.querySelector('span').textContent = 'התחל הקלטה'; addItem(`עדכון קולי, 0:${String(Math.max(recS, 7)).padStart(2, '0')}.m4a`); }
+});
+
+/* ---------- boot ---------- */
+render(views.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'login');
+})();
+</script>
+</body>
+</html>
