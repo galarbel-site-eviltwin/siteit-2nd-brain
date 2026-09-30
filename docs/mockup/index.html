@@ -141,7 +141,18 @@ img{display:block;max-width:100%}
 .icon-btn{display:grid;place-items:center;width:46px;height:46px;border-radius:50%;font-size:22px;color:var(--ink-2);transition:background-color .2s ease,transform .16s var(--ease-out)}
 .icon-btn:active{transform:scale(.94)}
 @media (hover:hover) and (pointer:fine){.icon-btn:hover{background:color-mix(in srgb,var(--accent) 12%,var(--surface));color:var(--ink)}}
-.me .icon-btn{margin-inline-start:auto}
+.me .theme-sw{margin-inline-start:auto}
+.theme-sw{position:relative;flex:none;display:flex;align-items:center;justify-content:space-between;width:72px;height:38px;padding:0 10px;border-radius:999px;background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--line-2);transition:background-color .3s ease,box-shadow .2s ease,transform .16s var(--ease-out)}
+.theme-sw:active{transform:scale(.96)}
+.ts-ic{position:relative;z-index:1;display:grid;place-items:center;font-size:17px;color:var(--ink-3);transition:color .3s ease}
+.ts-knob{position:absolute;top:4px;right:4px;width:30px;height:30px;border-radius:50%;background:var(--yellow);box-shadow:0 4px 10px -3px rgb(0 0 0 / .35);transition:transform .4s var(--ease-io),background-color .3s ease}
+.theme-sw .sun{color:#3A2F00}
+:root[data-theme="dark"] .ts-knob{transform:translateX(-34px);background:var(--accent)}
+:root[data-theme="dark"] .theme-sw .sun{color:var(--ink-3)}
+:root[data-theme="dark"] .theme-sw .moon{color:var(--on-accent)}
+@media (hover:hover) and (pointer:fine){.theme-sw:hover{box-shadow:inset 0 0 0 1.5px var(--plum-300)}}
+
+.login-copy > .theme-sw{position:fixed;z-index:5;top:24px;right:24px;box-shadow:inset 0 0 0 1.5px var(--line-2),var(--shadow)}
 
 .main{min-width:0;padding:40px clamp(20px,3.6vw,56px) 64px}
 .wrap{max-width:1240px;margin-inline:auto}
@@ -518,6 +529,7 @@ img{display:block;max-width:100%}
 <!-- ======================= LOGIN ======================= -->
 <section class="screen login" data-screen="login" aria-label="כניסה">
   <div class="login-copy">
+    <button class="theme-sw js-theme" role="switch" aria-checked="false" aria-label="מצב כהה" title="מעבר בין מצב בהיר לכהה"><span class="ts-knob"></span><span class="ts-ic sun"><i class="ph-fill ph-sun"></i></span><span class="ts-ic moon"><i class="ph-fill ph-moon"></i></span></button>
     <img class="logo js-logo" src="assets/logo.png" alt="SiteIt 2nd Brain" width="1759" height="894">
     <div>
       <h1 class="rv">כל מה שסייט איט יודעת. <span class="hl" id="hl-login">בשאלה אחת.</span></h1>
@@ -553,7 +565,7 @@ img{display:block;max-width:100%}
       <div class="me">
         <span class="av gal">גא</span>
         <div><b>גל ארבל</b><span>קידום אתרים</span></div>
-        <button class="icon-btn js-theme" aria-label="החלפת מצב כהה ובהיר"><i class="ph ph-moon"></i></button>
+        <button class="theme-sw js-theme" role="switch" aria-checked="false" aria-label="מצב כהה" title="מעבר בין מצב בהיר לכהה"><span class="ts-knob"></span><span class="ts-ic sun"><i class="ph-fill ph-sun"></i></span><span class="ts-ic moon"><i class="ph-fill ph-moon"></i></span></button>
       </div>
     </div>
   </aside>
@@ -562,7 +574,7 @@ img{display:block;max-width:100%}
     <img src="assets/mark-128.png" alt="SiteIt 2nd Brain" width="128" height="155">
     <b id="topTitle">היום שלי</b>
     <span class="sp"></span>
-    <button class="icon-btn js-theme" aria-label="החלפת מצב כהה ובהיר"><i class="ph ph-moon"></i></button>
+    <button class="theme-sw js-theme" role="switch" aria-checked="false" aria-label="מצב כהה" title="מעבר בין מצב בהיר לכהה"><span class="ts-knob"></span><span class="ts-ic sun"><i class="ph-fill ph-sun"></i></span><span class="ts-ic moon"><i class="ph-fill ph-moon"></i></span></button>
     <span class="av gal">גא</span>
   </header>
 
@@ -939,7 +951,7 @@ const root = document.documentElement;
 const setTheme = (t) => {
   root.dataset.theme = t;
   $$('.js-logo').forEach(i => i.src = t === 'dark' ? 'assets/logo-dark.png' : 'assets/logo.png');
-  $$('.js-theme i').forEach(i => i.className = t === 'dark' ? 'ph ph-sun' : 'ph ph-moon');
+  $$('.js-theme').forEach(b => b.setAttribute('aria-checked', t === 'dark'));
   try { localStorage.setItem('sb-theme', t); } catch (e) {}
 };
 let saved = null; try { saved = localStorage.getItem('sb-theme'); } catch (e) {}
