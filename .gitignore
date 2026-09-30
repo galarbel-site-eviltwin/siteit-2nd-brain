@@ -1,6 +1,19 @@
-node_modules/
-.next/
+# deps
+/node_modules
+/.pnp
+.pnp.*
+# next
+/.next/
+/out/
+/build
+next-env.d.ts
+*.tsbuildinfo
+# env (the template is committed)
 .env*
 !.env.example
-.vercel/
-*.log
+# misc
+.DS_Store
+*.pem
+npm-debug.log*
+.vercel
+coverage

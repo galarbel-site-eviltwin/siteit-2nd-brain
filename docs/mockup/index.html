@@ -454,6 +454,92 @@ img{display:block;max-width:100%}
 .kcard .tag{margin-top:12px}
 .kowner{display:flex;align-items:center;gap:10px;font-size:15px;color:var(--ink-2)}
 
+
+/* ============ Nav extras ============ */
+.nav-sep{height:1px;background:var(--line);margin:10px 16px}
+.side{overflow-y:auto;scrollbar-width:none}
+@media (max-height:820px){.nav a{height:48px}.side .brand{padding-bottom:12px}.side .brand img{width:160px}.add-btn{height:50px}}
+.nav-tag{margin-inline-start:auto;height:26px;font-size:12.5px;padding:0 10px}
+
+/* ============ Review ============ */
+.rev-layout{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:22px;align-items:start}
+.rev-list{display:grid;gap:18px}
+.rev{display:grid;gap:16px;transition:opacity .3s ease}
+.rev-head{display:flex;align-items:center;gap:14px}
+.rev-head b{display:block;font-size:17px}
+.rev-head div span{font-size:15px;color:var(--ink-2)}
+.rev-head .tag{margin-inline-start:auto}
+.rev-claim{font-size:clamp(20px,1.8vw,24px);font-weight:700;line-height:1.35;letter-spacing:-.01em;border-radius:14px;outline:0;transition:box-shadow .2s ease,background-color .2s ease}
+.rev-claim[contenteditable="true"]{padding:10px 14px;background:var(--surface-2);box-shadow:inset 0 0 0 2px var(--accent)}
+.unsure{background:color-mix(in srgb,var(--yellow) 45%,transparent);border-radius:8px;padding:0 6px;text-decoration:underline wavy #B38F00;text-underline-offset:5px}
+.rev-quote{font-size:17px;line-height:1.55;padding:14px 18px;border-radius:18px;background:color-mix(in srgb,var(--c) 11%,var(--surface))}
+.rev-quote .who{display:block;font-size:14px;font-weight:700;color:var(--ink-2);margin-bottom:4px}
+.rev-quote mark{background:color-mix(in srgb,var(--yellow) 55%,transparent);color:inherit;border-radius:6px;padding:0 4px}
+.rev-why{display:flex;gap:10px;font-size:15.5px;color:var(--ink-2);line-height:1.5}
+.rev-why i{font-size:20px;flex:none;color:var(--accent);margin-top:1px}
+.rev-field{display:grid;gap:10px}
+.rev-field label,.lbl-like{font-weight:600;font-size:16px}
+.due-pick{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.date{height:42px;border-radius:999px;border:0;padding:0 16px;background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--line-2);font-size:15.5px;color:var(--ink)}
+.date:focus{outline:0;box-shadow:inset 0 0 0 2px var(--accent)}
+.rev-actions{display:flex;gap:10px;flex-wrap:wrap;padding-top:4px}
+.rev.done{opacity:0}
+.rev-hist{position:sticky;top:24px}
+.rev-hist h2 i{font-size:22px;color:var(--accent)}
+.hist{list-style:none;display:grid;gap:4px}
+.hist li{display:flex;gap:12px;align-items:flex-start;padding:12px 0}
+.hist li+li{border-top:1px solid var(--line)}
+.hist .av{flex:none;box-shadow:none}
+.hist p{font-size:16px;line-height:1.45}
+.hist div > span{font-size:14px;color:var(--ink-2)}
+.hist li.new{animation:pop .5s var(--ease-out)}
+@keyframes pop{from{opacity:0;transform:translateY(-8px)}}
+.rev-empty{background:var(--surface)}
+
+/* ============ Admin ============ */
+.note{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:16px 20px;border-radius:20px;background:color-mix(in srgb,var(--accent) 9%,var(--surface));margin-bottom:18px}
+.note > i{font-size:24px;color:var(--accent)}
+.note p{flex:1;min-width:240px;font-size:16.5px}
+.people{display:grid;gap:12px}
+.person{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto auto;gap:18px;align-items:center;padding:16px 22px}
+.person .av{width:48px;height:48px;font-size:16px;box-shadow:none}
+.person b{display:block;font-size:17.5px}
+.person .em{font-size:14.5px;color:var(--ink-2)}
+.person .seen{font-size:14.5px;color:var(--ink-2);white-space:nowrap}
+.person.off{opacity:.55}
+.sw{position:relative;width:54px;height:30px;border-radius:999px;background:var(--line-2);transition:background-color .25s ease;flex:none}
+.sw::after{content:"";position:absolute;top:3px;right:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgb(0 0 0 / .25);transition:transform .3s var(--ease-io)}
+.sw[aria-checked="true"]{background:var(--green)}
+.sw[aria-checked="true"]::after{transform:translateX(-24px)}
+.conn-list{display:grid;gap:12px}
+.crow{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:18px;align-items:center;padding:16px 22px}
+.crow b{display:block;font-size:17px}
+.crow div span{font-size:14.5px;color:var(--ink-2)}
+.crow .logo-b{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:var(--surface-2);box-shadow:inset 0 0 0 1.5px var(--line);flex:none}
+.crow .logo-b img{width:26px;height:26px}
+.crow .logo-b i{font-size:28px}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+.stat{display:grid;gap:6px}
+.stat b{font-size:42px;font-weight:800;letter-spacing:-.03em;line-height:1.1}
+.spark{display:flex;align-items:flex-end;gap:4px;height:180px;margin-top:6px}
+.spark .d{flex:1;display:flex;flex-direction:column-reverse;border-radius:6px;overflow:hidden;transform-origin:bottom}
+.spark .d span{background:var(--c)}
+
+@media (max-width:1180px){
+  .rev-layout{grid-template-columns:1fr}
+  .rev-hist{position:static}
+}
+@media (max-width:900px){
+  .rev-head{flex-wrap:wrap}
+  .rev-head .tag{margin-inline-start:0}
+  .person{grid-template-columns:auto minmax(0,1fr) auto;gap:12px 14px;padding:16px}
+  .person .role,.person .seen{grid-column:2}
+  .person .sw{grid-row:1;grid-column:3}
+  .crow{grid-template-columns:auto minmax(0,1fr);gap:10px 14px;padding:16px}
+  .crow > .tag,.crow > .muted,.crow > .btn{grid-column:2;justify-self:start}
+  .stats{grid-template-columns:1fr;gap:14px}
+  .spark{height:140px;gap:2px}
+}
 /* ============ Reveal (initial state set by JS, so no-JS stays visible) ============ */
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 
@@ -559,6 +645,9 @@ img{display:block;max-width:100%}
       <a href="#ask" data-nav="ask"><i class="ph ph-sparkle"></i>שאל את המוח</a>
       <a href="#knowledge" data-nav="knowledge"><i class="ph ph-books"></i>ידע החברה</a>
       <a href="#ingest" data-nav="ingest"><i class="ph ph-tray-arrow-down"></i>קליטת מידע<span class="badge num">2</span></a>
+      <a href="#review" data-nav="review"><i class="ph ph-seal-check"></i>לבדיקה<span class="badge num" id="revBadge">3</span></a>
+      <span class="nav-sep" aria-hidden="true"></span>
+      <a href="#admin" data-nav="admin"><i class="ph ph-gear-six"></i>ניהול<span class="tag outline nav-tag">מנהל</span></a>
     </nav>
     <div class="side-foot">
       <button class="btn btn-primary add-btn" data-go="ingest"><i class="ph-bold ph-plus"></i>הוסף ידע</button>
@@ -627,9 +716,9 @@ img{display:block;max-width:100%}
         <article class="card pending rv" aria-labelledby="t-pend">
           <div class="card-head"><h2 id="t-pend"><span class="sq sm" data-src="dec"><i class="ph-bold ph-hand-pointing"></i></span>ממתין לך</h2><span class="tag solid" data-src="dec">3</span></div>
           <ul class="plist">
-            <li data-src="dec"><span class="sq sm"><i class="ph-fill ph-seal-check"></i></span><div><b>לאשר החלטה: בונים בשני שלבים</b><span>סטודיו נגה, חולץ מפגישה 22.9</span></div><i class="ph ph-caret-left go"></i></li>
-            <li data-src="meet"><span class="sq sm"><i class="ph-fill ph-link"></i></span><div><b>לשייך פגישה ללקוח</b><span>"שיחת היכרות", 29.9, לא זוהה לקוח</span></div><i class="ph ph-caret-left go"></i></li>
-            <li data-src="doc"><span class="sq sm"><i class="ph-fill ph-calendar-x"></i></span><div><b>התחייבות בלי תאריך</b><span>"נשלח מחקר מילות מפתח", כרמי ושות'</span></div><i class="ph ph-caret-left go"></i></li>
+            <li data-src="dec" data-go="review" role="button" tabindex="0"><span class="sq sm"><i class="ph-fill ph-seal-check"></i></span><div><b>לאשר החלטה: בונים בשני שלבים</b><span>סטודיו נגה, חולץ מפגישה 22.9</span></div><i class="ph ph-caret-left go"></i></li>
+            <li data-src="meet" data-go="ingest" role="button" tabindex="0"><span class="sq sm"><i class="ph-fill ph-link"></i></span><div><b>לשייך פגישה ללקוח</b><span>"שיחת היכרות", 29.9, לא זוהה לקוח</span></div><i class="ph ph-caret-left go"></i></li>
+            <li data-src="doc" data-go="review" role="button" tabindex="0"><span class="sq sm"><i class="ph-fill ph-calendar-x"></i></span><div><b>התחייבות בלי תאריך</b><span>"נשלח מחקר מילות מפתח", כרמי ושות'</span></div><i class="ph ph-caret-left go"></i></li>
           </ul>
         </article>
 
@@ -898,6 +987,106 @@ img{display:block;max-width:100%}
       </div>
     </section>
 
+    <!-- ============ REVIEW ============ -->
+    <section class="screen" data-view="review" hidden aria-labelledby="t-review">
+      <div class="page-head rv"><div><h1 id="t-review">לבדיקה</h1><p>דברים שהמוח חילץ, אבל לא יהפכו לעובדה בלי אישור שלך. אשר, תקן או דחה. כל שינוי נשמר עם שם ותאריך.</p></div>
+        <span class="tag solid" data-src="dec" id="revCount" style="height:40px;padding:0 18px;font-size:16px">3 ממתינים</span></div>
+      <div class="rev-layout">
+        <div class="rev-list" id="revList">
+
+          <article class="card rev rv" data-src="dec" data-kind="החלטה">
+            <div class="rev-head"><span class="sq"><i class="ph-fill ph-seal-check"></i></span><div><b>החלטה</b><span>סטודיו נגה עיצוב פנים</span></div><span class="tag" data-src="meet"><i class="ph-fill ph-microphone"></i>פגישה 22.9, דקה 31:10</span></div>
+            <p class="rev-claim" contenteditable="false">בונים את האתר בשני שלבים, קודם העמודים המרכזיים</p>
+            <blockquote class="rev-quote" data-src="meet"><span class="who">דני, 31:10</span>"בסדר, הולכים על שני שלבים. את הבלוג נעשה אחרי ההשקה."</blockquote>
+            <div class="rev-why"><i class="ph ph-info"></i>ההחלטה מחליפה את ההצעה המקורית (אתר מלא). אחרי אישור, המוח יתייחס להצעה הקודמת כהיסטוריה.</div>
+            <div class="rev-actions"><button class="btn btn-primary btn-sm" data-rev="ok"><i class="ph-bold ph-check"></i>אשר</button><button class="btn btn-ghost btn-sm" data-rev="edit"><i class="ph ph-pencil-simple"></i>תקן</button><button class="btn btn-ghost btn-sm" data-rev="no"><i class="ph ph-x"></i>דחה</button></div>
+          </article>
+
+          <article class="card rev rv" data-src="doc" data-kind="התחייבות">
+            <div class="rev-head"><span class="sq"><i class="ph-fill ph-flag"></i></span><div><b>התחייבות בלי תאריך</b><span>כרמי ושות' עורכי דין</span></div><span class="tag" data-src="meet"><i class="ph-fill ph-microphone"></i>פגישה 24.9, דקה 12:48</span></div>
+            <p class="rev-claim">גל ישלח ללקוח מחקר מילות מפתח</p>
+            <blockquote class="rev-quote" data-src="meet"><span class="who">גל, 12:48</span>"אני אשלח לכם את המחקר, ואז נחליט על העמודים."</blockquote>
+            <div class="rev-field"><label for="due1">עד מתי?</label><div class="due-pick"><button class="chip" aria-pressed="true" data-due="none">לא נקבע</button><button class="chip" aria-pressed="false" data-due="w">סוף השבוע</button><input id="due1" type="date" class="date" value=""></div></div>
+            <div class="rev-why"><i class="ph ph-info"></i>בפגישה לא נאמר תאריך, ולכן המוח לא ממציא אחד. אם תשאיר "לא נקבע", ההתחייבות תופיע כ"פתוחה, בלי יעד".</div>
+            <div class="rev-actions"><button class="btn btn-primary btn-sm" data-rev="ok"><i class="ph-bold ph-check"></i>שמור</button><button class="btn btn-ghost btn-sm" data-rev="no"><i class="ph ph-x"></i>זו לא התחייבות</button></div>
+          </article>
+
+          <article class="card rev rv" data-src="doc" data-kind="מחיר">
+            <div class="rev-head"><span class="sq"><i class="ph-fill ph-currency-circle-dollar"></i></span><div><b>מחיר בהצעה</b><span>מרפאת שיניים ד"ר אבן</span></div><span class="tag" data-src="meet"><i class="ph-fill ph-microphone"></i>פגישה 29.9, דקה 07:22</span></div>
+            <p class="rev-claim">ריטיינר SEO חודשי: <span class="unsure">8,400</span> ש"ח</p>
+            <blockquote class="rev-quote" data-src="meet"><span class="who">מיה, 07:22</span>"...אז הריטיינר יוצא <mark>שמונה ארבע מאות</mark> לחודש, כולל GEO."</blockquote>
+            <div class="rev-field"><span class="lbl-like">התמלול לא ודאי במספר. מה נכון?</span><div class="due-pick"><button class="chip" aria-pressed="true" data-num="8,400">8,400 ש"ח</button><button class="chip" aria-pressed="false" data-num="4,800">4,800 ש"ח</button><button class="chip" aria-pressed="false" data-play><i class="ph-fill ph-play"></i>האזן לקטע</button></div></div>
+            <div class="rev-actions"><button class="btn btn-primary btn-sm" data-rev="ok"><i class="ph-bold ph-check"></i>אשר</button><button class="btn btn-ghost btn-sm" data-rev="no"><i class="ph ph-x"></i>דחה</button></div>
+          </article>
+
+          <div class="empty rev-empty" hidden><i class="ph-fill ph-seal-check" style="color:var(--green)"></i><b>הכול נבדק</b><p class="muted">אין כרגע משהו שמחכה לך. פריטים חדשים יופיעו כאן אחרי קליטה.</p></div>
+        </div>
+
+        <aside class="card rev-hist rv" aria-labelledby="t-hist">
+          <div class="card-head"><h2 id="t-hist"><i class="ph ph-clock-counter-clockwise"></i>היסטוריית תיקונים</h2></div>
+          <ol class="hist" id="hist">
+            <li><span class="av maya">מה</span><div><p><b>מיה</b> קבעה תאריך יעד: "בחמישי" ← <b>1.10.2026</b></p><span>לפי מועד הפגישה, לא לפי יום ההעלאה. אתמול, 16:40</span></div></li>
+            <li><span class="av gal">גא</span><div><p><b>גל</b> העביר פגישה מ"כרמי ושות'" ל<b>ניר שחר אדריכלים</b></p><span>השיוך האוטומטי היה שגוי. שני, 11:05</span></div></li>
+            <li><span class="av dani">דש</span><div><p><b>דני</b> דחה: "הלקוח מוכן להעלות מחיר"</p><span>זו הייתה פרשנות, לא נאמר במפורש. ראשון, 09:30</span></div></li>
+          </ol>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ============ ADMIN ============ -->
+    <section class="screen" data-view="admin" hidden aria-labelledby="t-admin">
+      <div class="page-head rv"><div><h1 id="t-admin">ניהול</h1><p>מי נכנס, מה מחובר, כמה זה עולה, ומי צפה במה. זמין לדני בלבד.</p></div></div>
+      <div class="tools rv" role="tablist" aria-label="אזורי ניהול">
+        <button class="chip" aria-pressed="true" data-adm="people"><i class="ph ph-users-three"></i>עובדים</button>
+        <button class="chip" aria-pressed="false" data-adm="conn"><i class="ph ph-plugs-connected"></i>חיבורים</button>
+        <button class="chip" aria-pressed="false" data-adm="cost"><i class="ph ph-chart-bar"></i>שימוש ועלויות</button>
+        <button class="chip" aria-pressed="false" data-adm="privacy"><i class="ph ph-lock-key"></i>פרטיות</button>
+      </div>
+
+      <div class="adm" data-admp="people">
+        <div class="note rv"><i class="ph-fill ph-shield-check"></i><p>רק מיילים שברשימה יכולים להיכנס, גם אם יש להם חשבון Google תקין. פרילנסרים ו-Navoto לא נכנסים.</p><button class="btn btn-sm btn-primary"><i class="ph-bold ph-plus"></i>הוסף עובד</button></div>
+        <div class="people" id="people"></div>
+      </div>
+
+      <div class="adm" data-admp="conn" hidden>
+        <div class="conn-list">
+          <article class="card crow rv"><span class="logo-b"><img src="assets/google.svg" alt=""></span><div><b>התחברות Google</b><span>בעלים: גל. כל חמשת העובדים</span></div><span class="tag" data-src="wa"><i class="ph-fill ph-check-circle"></i>תקין</span><span class="muted small">כניסה אחרונה: לפני 4 דקות</span></article>
+          <article class="card crow rv"><span class="logo-b"><i class="ph-fill ph-microphone" style="color:#0878AA"></i></span><div><b>Timeless</b><span>העלאה ידנית של תמלולים</span></div><span class="tag outline">ידני</span><span class="muted small">היום: 3 תמלולים</span></article>
+          <article class="card crow rv"><span class="logo-b"><img src="https://cdn.simpleicons.org/whatsapp" alt=""></span><div><b>WhatsApp</b><span>ייצוא צ'אט ידני. בוט בשלב 8</span></div><span class="tag outline">ידני</span><span class="muted small">אחרון: 17.9</span></article>
+          <article class="card crow rv"><span class="logo-b"><img src="https://cdn.simpleicons.org/gmail" alt=""></span><div><b>Gmail ויומן Google</b><span>צריך אישור חד-פעמי של דני ב-Workspace</span></div><span class="tag" data-src="doc"><i class="ph-fill ph-hourglass-medium"></i>ממתין לדני</span><button class="btn btn-sm btn-soft">מה צריך לעשות?</button></article>
+          <article class="card crow rv"><span class="logo-b"><i class="ph-fill ph-microsoft-outlook-logo" style="color:#0A64C8"></i></span><div><b>Outlook ויומן Microsoft</b><span>כל עובד מחבר את החשבון שלו</span></div><span class="tag outline">שלב 6</span><span class="muted small">לא מחובר</span></article>
+          <article class="card crow rv"><span class="logo-b"><img src="https://cdn.simpleicons.org/asana" alt=""></span><div><b>Asana ו-Monday</b><span>סטטוס חי + פתיחת משימות באישור</span></div><span class="tag outline">שלב 7</span><span class="muted small">לא מחובר</span></article>
+        </div>
+        <p class="muted small rv" style="margin-top:16px">חיבור שהוגדר עדיין לא אומר שההיסטוריה נקלטה. ניתוק מקור ומחיקת מה שכבר נקלט הם שתי פעולות נפרדות.</p>
+      </div>
+
+      <div class="adm" data-admp="cost" hidden>
+        <div class="stats">
+          <article class="card stat rv"><span class="muted">עלות AI החודש</span><b class="num">$38.60</b><span class="small muted">מתוך הערכה של $60</span></article>
+          <article class="card stat rv"><span class="muted">שאלות למוח</span><b class="num">412</b><span class="small muted">גל <span class="ltr">61%</span>, דני <span class="ltr">39%</span></span></article>
+          <article class="card stat rv"><span class="muted">פריטים שנקלטו</span><b class="num">186</b><span class="small muted">מתוכם 12 נכשלו חלקית</span></article>
+        </div>
+        <article class="card rv" style="margin-top:22px"><div class="card-head"><h2>עלות לפי יום, ספטמבר</h2><span class="tag outline">נתוני דוגמה</span></div><div class="spark" id="spark" role="img" aria-label="עלות יומית לאורך ספטמבר"></div>
+          <div class="legend"><span data-src="brain"><i></i>שאלות</span><span data-src="meet"><i></i>קליטה וחילוץ</span><span data-src="dec"><i></i>תמלול קולי</span></div></article>
+      </div>
+
+      <div class="adm" data-admp="privacy" hidden>
+        <div class="pref-grid">
+          <article class="card rv"><div class="card-head"><h2><span class="sq sm" data-src="brain"><i class="ph-fill ph-lock-key"></i></span>איך הפרטיות עובדת</h2></div>
+            <div class="pref"><div><p>האזור האישי של כל עובד פרטי לו</p><p class="muted">דני יכול לצפות בו, וכל צפייה נרשמת ומוצגת לעובד</p></div></div>
+            <div class="pref"><div><p>שום דבר לא עובר מהאזור האישי לידע המשותף לבד</p><p class="muted">רק בלחיצה על "שתף", עם בחירה: הערה, הצעה או החלטה</p></div></div>
+            <div class="pref"><div><p>סיסמאות ומפתחות לא נשמרים כידע</p><p class="muted">המוח מזהה אותם בקליטה ומסתיר</p></div></div>
+          </article>
+          <article class="card rv"><div class="card-head"><h2><span class="sq sm" data-src="dec"><i class="ph-fill ph-eye"></i></span>צפיות של מנהל</h2></div>
+            <ol class="hist">
+              <li><span class="av dani">דש</span><div><p><b>דני</b> צפה בהערות האישיות של <b>בן</b></p><span>ראשון, 14:12. בן קיבל התראה</span></div></li>
+              <li><span class="av dani">דש</span><div><p><b>דני</b> ייצא את ציר הזמן של <b>פזית קוסמטיקה</b></p><span>12.9, 10:03</span></div></li>
+            </ol>
+          </article>
+        </div>
+      </div>
+    </section>
+
     </div>
   </main>
 
@@ -977,7 +1166,7 @@ function annotate(id, color) {
 }
 
 /* ---------- routing ---------- */
-const titles = { today: 'היום שלי', clients: 'לקוחות', client: 'סטודיו נגה', ask: 'שאל את המוח', knowledge: 'ידע החברה', ingest: 'קליטת מידע' };
+const titles = { today: 'היום שלי', clients: 'לקוחות', client: 'סטודיו נגה', ask: 'שאל את המוח', knowledge: 'ידע החברה', ingest: 'קליטת מידע', review: 'לבדיקה', admin: 'ניהול' };
 const views = Object.keys(titles);
 let current = null;
 function render(name) {
@@ -997,6 +1186,7 @@ function render(name) {
   if (name === 'ask') streamAnswer();
   if (name === 'client') { moveInd(); drawChart(); }
   if (name === 'clients') renderClients();
+  if (name === 'admin') renderPeople();
 }
 function go(name) {
   if (name === current) return;
@@ -1304,6 +1494,91 @@ recBtn.addEventListener('click', () => {
   else { clearInterval(recT); recBtn.querySelector('span').textContent = 'התחל הקלטה'; addItem(`עדכון קולי, 0:${String(Math.max(recS, 7)).padStart(2, '0')}.m4a`); }
 });
 
+
+/* ---------- review queue ---------- */
+const hist = $('#hist');
+function addHist(html) {
+  const li = document.createElement('li'); li.className = 'new';
+  li.innerHTML = `<span class="av gal">גא</span><div><p>${html}</p><span>עכשיו</span></div>`;
+  hist.prepend(li);
+}
+function updateRevCount() {
+  const n = $$('#revList .rev:not(.done)').length;
+  $('#revCount').textContent = n ? `${n} ממתינים` : 'הכול נבדק';
+  $('#revBadge').textContent = n; $('#revBadge').hidden = !n;
+  $('.rev-empty').hidden = !!n;
+}
+function resolve(card, verb) {
+  card.classList.add('done');
+  const kind = card.dataset.kind, claim = $('.rev-claim', card).textContent.trim();
+  addHist(`<b>גל</b> ${verb} ${kind}: "${claim}"`);
+  const h = card.offsetHeight;
+  if (hasG && !reduce) gsap.to(card, { height: 0, marginBottom: -18, paddingTop: 0, paddingBottom: 0, duration: .45, ease: 'power3.inOut', delay: .15, onComplete: () => { card.remove(); updateRevCount(); } });
+  else { card.remove(); updateRevCount(); }
+  showToast(verb === 'דחה' ? 'נדחה. המוח לא ישתמש בזה בתשובות' : 'נשמר. המוח ישתמש בזה מעכשיו, עם המקור');
+}
+$('#revList').addEventListener('click', (e) => {
+  const card = e.target.closest('.rev'); if (!card) return;
+  const chip = e.target.closest('.due-pick .chip');
+  if (chip && !chip.hasAttribute('data-play')) {
+    $$('.due-pick .chip:not([data-play])', card).forEach(c => c.setAttribute('aria-pressed', c === chip));
+    if (chip.dataset.num) $('.unsure', card).textContent = chip.dataset.num;
+    if (chip.dataset.due) { const d = $('.date', card); if (d) d.value = chip.dataset.due === 'w' ? '2026-10-02' : ''; }
+    return;
+  }
+  if (e.target.closest('[data-play]')) { showToast('מנגן מדקה 07:22'); return; }
+  const b = e.target.closest('[data-rev]'); if (!b) return;
+  const claim = $('.rev-claim', card);
+  if (b.dataset.rev === 'edit') {
+    const on = claim.getAttribute('contenteditable') !== 'true';
+    claim.setAttribute('contenteditable', on);
+    b.innerHTML = on ? '<i class="ph-bold ph-floppy-disk"></i>שמור תיקון' : '<i class="ph ph-pencil-simple"></i>תקן';
+    if (on) { claim.focus(); getSelection().selectAllChildren(claim); getSelection().collapseToEnd(); }
+    else { addHist(`<b>גל</b> תיקן ניסוח: "${claim.textContent.trim()}"`); showToast('התיקון נשמר עם שמך ותאריך'); }
+    return;
+  }
+  resolve(card, b.dataset.rev === 'no' ? 'דחה' : 'אישר');
+});
+$$('.date').forEach(d => d.addEventListener('change', () => { const c = d.closest('.rev'); $$('.due-pick .chip', c).forEach(x => x.setAttribute('aria-pressed', 'false')); }));
+
+/* ---------- admin ---------- */
+const staff = [
+  { n: 'דני שקד', e: 'dani@eviltwin.io', c: 'dani', i: 'דש', r: 'מנהל', s: 'לפני שעה', on: true },
+  { n: 'גל ארבל', e: 'galarbel@eviltwin.io', c: 'gal', i: 'גא', r: 'עובד', s: 'עכשיו', on: true },
+  { n: 'מיה הלוי', e: 'maya@eviltwin.io', c: 'maya', i: 'מה', r: 'עובד', s: 'אתמול', on: true },
+  { n: 'איתי אלימור', e: 'itay@eviltwin.io', c: 'itai', i: 'אא', r: 'עובד', s: 'לפני 3 ימים', on: true },
+  { n: 'בן דיין', e: 'ben@eviltwin.io', c: 'ben', i: 'בד', r: 'עובד', s: 'עוד לא נכנס', on: true }
+];
+function renderPeople() {
+  $('#people').innerHTML = staff.map((p, k) => `<article class="card person rv ${p.on ? '' : 'off'}"><span class="av ${p.c}">${p.i}</span>
+    <div><b>${p.n}</b><span class="em ltr">${p.e}</span></div>
+    <span class="tag ${p.r === 'מנהל' ? 'solid' : 'outline'} role" ${p.r === 'מנהל' ? 'data-src="dec"' : ''}>${p.r}</span>
+    <span class="seen">כניסה אחרונה: ${p.s}</span>
+    <button class="sw" role="switch" aria-checked="${p.on}" aria-label="גישה פעילה ל${p.n}" data-person="${k}" ${p.r === 'מנהל' ? 'disabled title="אי אפשר לנתק את המנהל האחרון"' : ''}></button></article>`).join('');
+  reveal($('#people'));
+}
+$('#people').addEventListener('click', (e) => {
+  const s = e.target.closest('.sw'); if (!s || s.disabled) return;
+  const p = staff[s.dataset.person]; p.on = !p.on;
+  s.setAttribute('aria-checked', p.on); s.closest('.person').classList.toggle('off', !p.on);
+  showToast(p.on ? `${p.n} יכול להיכנס שוב` : `הגישה של ${p.n} נחסמה מיד. הידע שהוסיף נשאר בחברה`);
+});
+function drawSpark() {
+  const box = $('#spark'); if (!box) return;
+  box.innerHTML = Array.from({ length: 30 }, (_, i) => {
+    const q = 0.4 + Math.abs(Math.sin(i * 0.9)) * 0.9 + (i % 7 === 5 ? 1.1 : 0), k = 0.3 + Math.abs(Math.cos(i * 1.3)) * 0.8, t = i % 4 === 0 ? 0.35 : 0.08;
+    const tot = q + k + t;
+    return `<div class="d" style="height:${tot / 3.4 * 100}%"><span data-src="brain" style="flex:${q}"></span><span data-src="meet" style="flex:${k}"></span><span data-src="dec" style="flex:${t}"></span></div>`;
+  }).join('');
+  if (hasG && !reduce) gsap.fromTo('#spark .d', { scaleY: 0 }, { scaleY: 1, duration: .7, ease: 'expo.out', stagger: .015 });
+}
+$$('[data-adm]').forEach(b => b.addEventListener('click', () => {
+  $$('[data-adm]').forEach(x => x.setAttribute('aria-pressed', x === b));
+  $$('[data-admp]').forEach(p => p.hidden = p.dataset.admp !== b.dataset.adm);
+  const pane = $(`[data-admp="${b.dataset.adm}"]`); reveal(pane);
+  if (b.dataset.adm === 'cost') drawSpark();
+}));
+document.addEventListener('keydown', (e) => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('li[role="button"][data-go]')) { e.preventDefault(); go(e.target.dataset.go); } });
 /* ---------- boot ---------- */
 render(views.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'login');
 })();
