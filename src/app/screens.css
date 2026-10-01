@@ -253,3 +253,6 @@ select {
 .ftile-link { flex: 1 1 128px; min-width: 128px; }
 .ftile-link select { width: 100%; height: 36px; border-radius: 999px; padding: 0 14px; font-size: 14.5px; background-color: var(--surface-2); color: var(--ink-2); box-shadow: inset 0 0 0 1.5px var(--line); border: 0; background-position: left 14px center; padding-inline-end: 38px !important; }
 @media (max-width: 900px) { .ftiles { grid-template-columns: 1fr; } }
+.sq.brand-ic { background: none; overflow: hidden; }
+.sq.brand-ic img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.chero .meta .kind-label { font-weight: 600; color: var(--ink); }

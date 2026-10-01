@@ -5,13 +5,12 @@ import { notFound } from "next/navigation";
 import { deleteItemAction, updateItemAction } from "../../actions";
 import { AssignForm } from "@/components/assign-form";
 import { KindIcon, kindLabel } from "@/components/kind-icon";
+import { arrival } from "@/lib/item-label";
 import { clientOptions } from "@/lib/clients";
 import { db } from "@/lib/db";
 import { chunks, clients, employees, items } from "@/lib/db/schema";
 import { fmtDateTime, isoDay, msToClock } from "@/lib/format";
 import { requireEmployee } from "@/lib/session";
-
-const SOURCE = { whatsapp: "ייצוא WhatsApp", timeless: "Timeless", upload: "העלאה", manual: "הוזן ידנית", drive: "Google Drive" } as const;
 
 export default async function ItemPage({ params }: PageProps<"/items/[id]">) {
   const me = await requireEmployee();
@@ -23,18 +22,19 @@ export default async function ItemPage({ params }: PageProps<"/items/[id]">) {
   if (!row) notFound();
   const it = row.item;
   const [parts, options] = await Promise.all([db.select().from(chunks).where(eq(chunks.itemId, id)).orderBy(asc(chunks.seq)), clientOptions()]);
-  const meta = (it.meta ?? {}) as { messages?: number; segments?: number; mediaFiles?: number };
+  const meta = (it.meta ?? {}) as { messages?: number; segments?: number; mediaFiles?: number; link?: string };
   const canDelete = it.createdBy === me.id || me.role === "admin";
 
   return (
     <>
       <Link href={it.clientId && it.assignment === "confirmed" ? `/clients/${it.clientId}?tab=timeline` : "/ingest"} className="back"><ArrowRight size={20} />{it.clientId && it.assignment === "confirmed" ? row.clientName : "קליטת מידע"}</Link>
       <header className="chero">
-        <KindIcon kind={it.kind} size="lg" />
+        <KindIcon kind={it.kind} source={it.source} size="lg" />
         <div>
           <h1 className="item-title">{it.title}</h1>
           <div className="meta">
-            <span>{kindLabel(it.kind)}, {SOURCE[it.source]}</span>
+            <span className="kind-label">{kindLabel(it.kind, it.source)}</span>
+            <span>{arrival(it.source, meta.link)}</span>
             <span>נקלט {fmtDateTime(it.recordedAt)}{row.byName ? ` ע"י ${row.byName}` : ""}</span>
             {meta.messages != null && <span>{meta.messages} הודעות</span>}
             {meta.segments != null && <span>{meta.segments} קטעי דיבור</span>}

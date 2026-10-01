@@ -22,3 +22,9 @@ export async function signedUrl(path: string, seconds = 120) {
 export async function removeFile(path: string) {
   await admin().storage.from(BUCKET).remove([path]);
 }
+
+export async function getFile(path: string) {
+  const { data, error } = await admin().storage.from(BUCKET).download(path);
+  if (error) throw new Error(`storage download failed: ${error.message}`);
+  return new Uint8Array(await data.arrayBuffer());
+}

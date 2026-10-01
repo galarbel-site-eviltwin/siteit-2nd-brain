@@ -57,7 +57,7 @@ export default async function Today() {
             {recent.length === 0 && <p className="muted">עוד לא נקלט כלום. <Link href="/ingest">להעלאה ראשונה</Link></p>}
             {recent.map((r) => (
               <div key={r.id}>
-                <KindIcon kind={r.kind} size="sm" />
+                <KindIcon kind={r.kind} source={r.source} size="sm" />
                 <span><Link href={`/items/${r.id}`}><b>{r.title}</b></Link><span className="sub">{r.clientName ?? "לא משויך"}</span></span>
                 <span className="sub">{ago(r.recordedAt)}</span>
               </div>

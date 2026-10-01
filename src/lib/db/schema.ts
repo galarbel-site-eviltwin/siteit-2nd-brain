@@ -71,7 +71,7 @@ export const contacts = pgTable(
 // ---------- ingested knowledge ----------
 
 export const itemKind = pgEnum("item_kind", ["meeting", "chat", "document", "voice_note", "note"]);
-export const itemSource = pgEnum("item_source", ["timeless", "whatsapp", "upload", "manual", "drive"]);
+export const itemSource = pgEnum("item_source", ["timeless", "whatsapp", "upload", "manual", "drive", "zoom"]);
 export const assignmentStatus = pgEnum("assignment_status", ["none", "suggested", "confirmed"]);
 // stored = kept, but its content cannot be read yet (audio, images): honest about what was ingested.
 export const ingestStatus = pgEnum("ingest_status", ["processing", "ready", "stored", "failed"]);

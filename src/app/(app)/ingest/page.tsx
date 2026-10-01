@@ -62,7 +62,7 @@ export default async function Ingest() {
         <div className="q">
           {waiting.map((it) => (
             <article key={it.id} className="card qitem">
-              <KindIcon kind={it.kind} />
+              <KindIcon kind={it.kind} source={it.source} />
               <div>
                 <Link href={`/items/${it.id}`}><b>{it.title}</b></Link>
                 <p className="muted small">{it.occurredAt ? fmtDate(it.occurredAt) : "תאריך לא ידוע"}{it.participants.length ? `, ${it.participants.slice(0, 4).join(", ")}` : ""}. נקלט {ago(it.recordedAt)}</p>
@@ -82,7 +82,7 @@ export default async function Ingest() {
         {done.length === 0 && <p className="muted">עוד לא נקלט כלום.</p>}
         {done.map((it) => (
           <div key={it.id}>
-            <KindIcon kind={it.kind} size="sm" />
+            <KindIcon kind={it.kind} source={it.source} size="sm" />
             <span><Link href={`/items/${it.id}`}><b>{it.title}</b></Link><span className="sub">{it.status === "failed" ? it.error : it.clientName ? `שויך ל${it.clientName}` : ""}</span></span>
             <span className="sub">{ago(it.recordedAt)}</span>
           </div>

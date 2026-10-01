@@ -124,11 +124,11 @@ export default async function ClientSpace({ params, searchParams }: PageProps<"/
             <ol className="tl">
               {confirmed.map((it) => (
                 <li key={it.id}>
-                  <KindIcon kind={it.kind} />
+                  <KindIcon kind={it.kind} source={it.source} />
                   <Link href={`/items/${it.id}`} className="card tl-card">
                     <span className="when">{it.occurredAt ? fmtDate(it.occurredAt) : `נקלט ${fmtDate(it.recordedAt)}, תאריך לא ידוע`}</span>
                     <b>{it.title}</b>
-                    <span className="muted small">{kindLabel(it.kind)}{it.participants.length ? `, ${it.participants.slice(0, 4).join(", ")}` : ""}{it.status === "stored" ? ". נשמר, עוד לא נקרא" : ""}</span>
+                    <span className="muted small">{kindLabel(it.kind, it.source)}{it.participants.length ? `, ${it.participants.slice(0, 4).join(", ")}` : ""}{it.status === "stored" ? ". נשמר, עוד לא נקרא" : ""}</span>
                   </Link>
                 </li>
               ))}

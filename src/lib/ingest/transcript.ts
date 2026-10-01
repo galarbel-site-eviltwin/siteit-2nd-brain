@@ -20,7 +20,27 @@ const toMs = (ts: string) => {
   return ((h * 60 + m) * 60 + s) * 1000;
 };
 
+// Subtitle files (Zoom saves .vtt, others .srt): cue numbers and "00:00:01.000 --> 00:00:04.000" lines
+// become one "[00:00:01] Speaker: text" line per cue, which the rules below already read.
+const CUE_TIME = /^(\d{1,2}:\d{2}:\d{2})[.,]\d{1,3}\s+-->\s+\S+/;
+export const isSubtitles = (text: string) => /^WEBVTT/.test(text.trimStart()) || /^\d+\r?\n\d{2}:\d{2}:\d{2},\d{3} -->/.test(text.trimStart());
+function fromCues(text: string) {
+  const out: string[] = [];
+  let at: string | null = null, buf: string[] = [];
+  const flush = () => { if (at && buf.length) out.push(`[${at}] ${buf.join(" ")}`); buf = []; at = null; };
+  for (const raw of text.replace(/\r/g, "").split("\n")) {
+    const line = raw.trim();
+    const t = line.match(CUE_TIME);
+    if (t) { flush(); at = t[1]; continue; }
+    if (!line) { flush(); continue; }
+    if (at) buf.push(line);
+  }
+  flush();
+  return out.join("\n");
+}
+
 export function parseTranscript(text: string): Segment[] {
+  if (isSubtitles(text)) text = fromCues(text);
   const out: Segment[] = [];
   let cur: Segment | null = null;
   const push = () => { if (cur && cur.text.trim()) out.push({ ...cur, text: cur.text.trim() }); cur = null; };
@@ -31,7 +51,7 @@ export function parseTranscript(text: string): Segment[] {
     if ((m = line.match(PLAIN)) && HEADER.test(m[1].trim())) { push(); out.push({ speaker: null, startMs: null, text: line }); continue; }
     if ((m = line.match(INLINE))) { push(); out.push({ startMs: toMs(m[1]), speaker: m[2].trim(), text: m[3].trim() }); continue; }
     if ((m = line.match(INLINE_AFTER))) { push(); out.push({ speaker: m[1].trim(), startMs: toMs(m[2]), text: m[3].trim() }); continue; }
-    if ((m = line.match(HEAD))) { push(); cur = { speaker: m[1].trim(), startMs: toMs(m[2]), text: "" }; continue; }
+    if ((m = line.match(HEAD))) { push(); cur = { speaker: m[1].trim().replace(/^\[(.+)\]$/, "$1"), startMs: toMs(m[2]), text: "" }; continue; }
     if ((m = line.match(HEAD_TS_FIRST))) { push(); cur = { startMs: toMs(m[1]), speaker: m[2].trim(), text: "" }; continue; }
     if (!cur && (m = line.match(PLAIN))) { out.push({ speaker: m[1].trim(), startMs: null, text: m[2].trim() }); continue; }
     if (cur) cur.text += (cur.text ? " " : "") + line;
@@ -47,7 +67,8 @@ export function isTranscript(segments: Segment[]) {
   return withSpeaker.length >= 4 && withSpeaker.length >= segments.length * 0.6 && new Set(withSpeaker.map((s) => s.speaker)).size >= 2;
 }
 
-const MONTHS: Record<string, number> = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12,
+export const MONTHS: Record<string, number> = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12,
+  january: 1, february: 2, march: 3, april: 4, june: 6, july: 7, august: 8, september: 9, october: 10, november: 11, december: 12,
   ינואר: 1, פברואר: 2, מרץ: 3, אפריל: 4, מאי: 5, יוני: 6, יולי: 7, אוגוסט: 8, ספטמבר: 9, אוקטובר: 10, נובמבר: 11, דצמבר: 12 };
 
 // The meeting date, if the document states one near its top. Otherwise null: the brain does not guess.
