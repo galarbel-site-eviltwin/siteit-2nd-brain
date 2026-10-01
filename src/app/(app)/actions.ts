@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { processItem, summarizeClient, summarizeItem } from "@/lib/ai/summarize";
@@ -181,4 +181,21 @@ export async function deleteItemAction(form: FormData) {
   if (it.clientId) after(() => summarizeClient(it.clientId!).catch(() => null));
   revalidatePath("/ingest");
   redirect(it.clientId ? `/clients/${it.clientId}?tab=timeline` : "/ingest");
+}
+
+// Several items at once, from the ingest page. Only what this person may delete (their own, or anything for an admin).
+export async function bulkDeleteItemsAction(form: FormData) {
+  const me = await requireEmployee();
+  const ids = [...new Set(form.getAll("itemIds").map(String).filter(Boolean))];
+  if (!ids.length) redirect("/ingest");
+  const rows = await db.select({ id: items.id, path: items.storagePath, by: items.createdBy, clientId: items.clientId, assignment: items.assignment }).from(items).where(inArray(items.id, ids));
+  const allowed = rows.filter((r) => r.by === me.id || me.role === "admin");
+  for (const r of allowed) if (r.path) await removeFile(r.path).catch(() => null);
+  if (allowed.length) await db.delete(items).where(inArray(items.id, allowed.map((r) => r.id)));
+  await audit("items_bulk_deleted", me.email, { count: allowed.length, ids: allowed.map((r) => r.id) });
+  const touched = new Set(allowed.filter((r) => r.clientId && r.assignment === "confirmed").map((r) => r.clientId!));
+  if (touched.size) after(async () => { for (const c of touched) await summarizeClient(c).catch(() => null); });
+  revalidatePath("/ingest");
+  revalidatePath("/clients");
+  redirect(`/ingest?deleted=${allowed.length}${rows.length > allowed.length ? `&skipped=${rows.length - allowed.length}` : ""}`);
 }

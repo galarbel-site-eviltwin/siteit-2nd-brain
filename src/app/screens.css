@@ -323,3 +323,10 @@ select {
 main:has(.ask.is-started) .ask-hero { height: 150px; }
 main:has(.ask.is-started) .ask-hero-copy p { display: none; }
 @media (prefers-reduced-motion: reduce) { .ask-hero { transition: none; } }
+
+/* Bulk selection on the ingest page */
+.qitem:has(> .bulk-pick) { grid-template-columns: auto auto minmax(0, 1fr); }
+.rows.picks > div { grid-template-columns: auto auto minmax(0, 1fr) auto; }
+.bulk-pick { display: grid; place-items: center; width: 28px; height: 44px; padding: 0; background: none; box-shadow: none; border-radius: 0; cursor: pointer; }
+.bulk-pick input { width: 20px; height: 20px; accent-color: var(--plum); cursor: pointer; }
+.rows.picks .bulk-pick { height: 34px; }

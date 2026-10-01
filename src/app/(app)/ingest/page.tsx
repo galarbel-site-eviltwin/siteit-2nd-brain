@@ -1,7 +1,10 @@
 import { count, eq } from "drizzle-orm";
 import Image from "next/image";
 import Link from "next/link";
+import { bulkDeleteItemsAction } from "../actions";
 import { AssignForm } from "@/components/assign-form";
+import { ConfirmDelete } from "@/components/confirm-submit";
+import { SelectAll } from "@/components/select-all";
 import { Dropzone } from "@/components/dropzone";
 import { KindIcon } from "@/components/kind-icon";
 import { clientOptions, recentItems } from "@/lib/clients";
@@ -11,8 +14,14 @@ import { getConnection, getRoots, type DriveConfig } from "@/lib/drive/google";
 import { ago, fmtDate } from "@/lib/format";
 import { requireEmployee } from "@/lib/session";
 
-export default async function Ingest() {
+const Pick = ({ id, title }: { id: string; title: string }) => (
+  <label className="bulk-pick"><input type="checkbox" name="itemIds" value={id} form="bulk-items" aria-label={`סימון ${title}`} /></label>
+);
+
+export default async function Ingest({ searchParams }: PageProps<"/ingest">) {
   await requireEmployee();
+  const sp = await searchParams;
+  const deleted = Number(sp.deleted ?? 0), skipped = Number(sp.skipped ?? 0);
   const [rows, options, conn, [{ n: newFolders }]] = await Promise.all([
     recentItems(60), clientOptions(), getConnection(),
     db.select({ n: count() }).from(driveFolders).where(eq(driveFolders.status, "pending")),
@@ -55,6 +64,16 @@ export default async function Ingest() {
         </article>
       </div>
 
+      {deleted > 0 && <p className="note" role="status">נמחקו {deleted} פריטים.{skipped ? ` ${skipped} לא נמחקו, כי רק מי שהעלה אותם (או מנהל) יכול למחוק.` : ""}</p>}
+      {rows.length > 0 && (
+        <div className="bulk-bar card">
+          <form id="bulk-items" action={bulkDeleteItemsAction} hidden />
+          <span className="muted small">מסמנים פריטים ברשימות למטה, ואז:</span>
+          <SelectAll formId="bulk-items" />
+          <ConfirmDelete formId="bulk-items" />
+        </div>
+      )}
+
       <h2 className="sec-title">מחכים לשיוך <span className="tag solid-plum">{waiting.length}</span></h2>
       {waiting.length === 0 ? (
         <p className="muted">אין כרגע פריטים שמחכים לך.</p>
@@ -62,6 +81,7 @@ export default async function Ingest() {
         <div className="q">
           {waiting.map((it) => (
             <article key={it.id} className="card qitem">
+              <Pick id={it.id} title={it.title} />
               <KindIcon kind={it.kind} source={it.source} />
               <div>
                 <Link href={`/items/${it.id}`}><b>{it.title}</b></Link>
@@ -78,10 +98,11 @@ export default async function Ingest() {
       )}
 
       <h2 className="sec-title">נקלטו לאחרונה</h2>
-      <div className="rows card">
+      <div className="rows card picks">
         {done.length === 0 && <p className="muted">עוד לא נקלט כלום.</p>}
         {done.map((it) => (
           <div key={it.id}>
+            <Pick id={it.id} title={it.title} />
             <KindIcon kind={it.kind} source={it.source} size="sm" />
             <span><Link href={`/items/${it.id}`}><b>{it.title}</b></Link><span className="sub">{it.status === "failed" ? it.error : it.clientName ? `שויך ל${it.clientName}` : ""}</span></span>
             <span className="sub">{ago(it.recordedAt)}</span>

@@ -13,6 +13,7 @@
     "db:seed": "tsx scripts/seed-employees.ts"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^4.0.71",
     "@ai-sdk/react": "^4.0.129",
     "@phosphor-icons/react": "^2.1.10",
     "@supabase/supabase-js": "^2.117.2",

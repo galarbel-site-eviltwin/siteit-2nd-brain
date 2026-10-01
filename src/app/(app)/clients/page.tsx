@@ -1,6 +1,7 @@
 import { MagnifyingGlass, Plus, WarningCircle } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
-import { listClients, monoColor, SERVICES, STATUS, type Service } from "@/lib/clients";
+import { ClientMark } from "@/components/client-mark";
+import { listClients, SERVICES, STATUS, type Service } from "@/lib/clients";
 import { ago } from "@/lib/format";
 import { requireEmployee } from "@/lib/session";
 
@@ -42,7 +43,7 @@ export default async function Clients({ searchParams }: PageProps<"/clients">) {
         {shown.map((c) => (
           <Link key={c.id} href={`/clients/${c.id}`} className="client">
             <div className="client-top">
-              <span className="mono" style={{ background: monoColor(c.id) }}>{c.name.trim()[0]}</span>
+              <ClientMark id={c.id} name={c.name} domain={c.domain} size={54} />
               <div><b>{c.name}</b>{c.domain && <span className="dom ltr">{c.domain}</span>}</div>
             </div>
             <div className="tags">

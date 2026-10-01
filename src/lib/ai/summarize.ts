@@ -4,7 +4,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { chunks, clients, items, type ClientSummary, type ItemSummary } from "@/lib/db/schema";
 import { describe } from "@/lib/item-label";
-import { CHAT_MODEL } from "./embed";
+import { CHAT_MODEL } from "./models";
 
 const point = z.object({
   text: z.string().describe("משפט אחד קצר בעברית"),

@@ -47,8 +47,8 @@ export async function searchSources(query: string, scope: Scope = {}, limit = 12
       select ${COLS} from chunks c join items i on i.id = c.item_id left join clients cl on cl.id = i.client_id
       where ${scopeSql(scope)} and c.embedding is not null
       order by c.embedding <=> ${v}::vector limit 30`)) as unknown as Row[];
-  } catch (e) {
-    console.error("vector search unavailable", (e as Error).message);
+  } catch {
+    // No vectors (no embeddings provider yet): the word search alone answers.
   }
 
   const score = new Map<string, { row: Row; s: number }>();

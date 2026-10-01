@@ -1,7 +1,7 @@
 import { convertToModelMessages, createUIMessageStreamResponse, isStepCount, streamText, toUIMessageStream, tool, type UIMessage } from "ai";
 import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { z } from "zod";
-import { CHAT_MODEL } from "@/lib/ai/embed";
+import { CHAT_MODEL } from "@/lib/ai/models";
 import { searchSources } from "@/lib/ai/search";
 import { db } from "@/lib/db";
 import { clientAliases, clients, items } from "@/lib/db/schema";

@@ -2,21 +2,20 @@ import { embed, embedMany } from "ai";
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { chunks, items } from "@/lib/db/schema";
-
-// Models go through Vercel AI Gateway, so switching provider is a one-line change.
-export const EMBED_MODEL = "openai/text-embedding-3-small";
-export const CHAT_MODEL = "anthropic/claude-sonnet-5.5";
+import { EMBED_MODEL } from "./models";
 
 // The title travels with each piece, so "the price" in a chat with Noga is found when asking about Noga.
 const forEmbedding = (title: string, text: string) => `${title}\n${text}`.slice(0, 6000);
 
 export async function embedQuery(q: string) {
+  if (!EMBED_MODEL) throw new Error("no embeddings provider");
   const { embedding } = await embed({ model: EMBED_MODEL, value: q });
   return embedding;
 }
 
 // Pieces that have no vector yet, a batch at a time. Safe to call again: it only picks what is missing.
 export async function embedPending(limit = 200, itemId?: string) {
+  if (!EMBED_MODEL) return 0;
   const rows = await db
     .select({ id: chunks.id, text: chunks.text, title: items.title })
     .from(chunks).innerJoin(items, eq(items.id, chunks.itemId))
