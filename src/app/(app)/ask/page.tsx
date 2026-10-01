@@ -13,7 +13,7 @@ export default async function Ask() {
           <p>כל שאלה על לקוח, פגישה או החלטה, עם מקור לכל תשובה.</p>
         </div>
       </section>
-      <form className="ask-box" aria-disabled="true">
+      <form className="ask-box">
         <Sparkle size={28} weight="duotone" />
         <label className="sr-only" htmlFor="q">שאלה למוח</label>
         <input id="q" disabled placeholder="המוח עוד לומד. השאלות ייפתחו בשלב 2, אחרי שנקלוט את הפגישות הראשונות" />

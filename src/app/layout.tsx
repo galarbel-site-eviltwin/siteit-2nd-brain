@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Rubik } from "next/font/google";
 import "./globals.css";
+import "./screens.css";
 
 const rubik = Rubik({ subsets: ["hebrew", "latin"], variable: "--font-rubik", display: "swap" });
 

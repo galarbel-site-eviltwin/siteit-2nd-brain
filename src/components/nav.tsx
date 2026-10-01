@@ -7,10 +7,10 @@ import { usePathname } from "next/navigation";
 // Screens arrive phase by phase (docs/technical-spec.md §10); until then they show when they land.
 const items = [
   { href: "/", label: "היום שלי", Icon: SunHorizon },
-  { href: null, label: "לקוחות", Icon: Buildings, phase: 1 },
+  { href: "/clients", label: "לקוחות", Icon: Buildings },
   { href: "/ask", label: "שאל את המוח", Icon: Sparkle },
   { href: null, label: "ידע החברה", Icon: Books, phase: 9 },
-  { href: null, label: "קליטת מידע", Icon: TrayArrowDown, phase: 1 },
+  { href: "/ingest", label: "קליטת מידע", Icon: TrayArrowDown },
   { href: null, label: "לבדיקה", Icon: SealCheck, phase: 3 },
 ] as const;
 
@@ -20,7 +20,7 @@ export function Nav({ isAdmin }: { isAdmin: boolean }) {
     <nav className="nav">
       {items.map(({ href, label, Icon, ...rest }) =>
         href ? (
-          <Link key={label} href={href} aria-current={path === href ? "page" : undefined}><Icon size={25} />{label}</Link>
+          <Link key={label} href={href} aria-current={(href === "/" ? path === "/" : path.startsWith(href)) ? "page" : undefined}><Icon size={25} />{label}</Link>
         ) : (
           <span key={label} aria-disabled="true"><Icon size={25} />{label}<em className="soon">שלב {"phase" in rest ? rest.phase : ""}</em></span>
         ),

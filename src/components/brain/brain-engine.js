@@ -228,7 +228,7 @@ export function mountBrain(root, opts) {
 
   const ro = new ResizeObserver(layout);
   ro.observe(root);
-  const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; visible ? play() : pause(); });
+  const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible) play(); else pause(); });
   io.observe(root);
   const onVis = () => (document.hidden ? pause() : play());
   document.addEventListener("visibilitychange", onVis);
