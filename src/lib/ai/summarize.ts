@@ -100,15 +100,19 @@ export async function summarizeClient(clientId: string) {
 }
 
 // Everything a new or changed item needs: vectors, its own summary, and a fresh picture of its client.
-export async function processItem(itemId: string) {
+// Returns whether the summary was written, and the error otherwise (so a bad key stops a batch early).
+export async function processItem(itemId: string): Promise<{ ok: true } | { ok: false; error: string }> {
   const { embedPending } = await import("./embed");
   try {
     await embedPending(500, itemId);
     await summarizeItem(itemId);
     const [it] = await db.select({ clientId: items.clientId, assignment: items.assignment }).from(items).where(eq(items.id, itemId)).limit(1);
     if (it?.clientId && it.assignment === "confirmed") await summarizeClient(it.clientId);
+    return { ok: true };
   } catch (e) {
-    console.error("AI processing failed", itemId, (e as Error).message);
+    const error = (e as Error).message;
+    console.error("AI processing failed", itemId, error);
+    return { ok: false, error };
   }
 }
 
@@ -122,8 +126,10 @@ export async function catchUpAI(budgetMs = 60_000) {
   const todo = await db.select({ id: items.id }).from(items).where(and(eq(items.status, "ready"), isNull(items.summarizedAt))).limit(20);
   for (const t of todo) {
     if (Date.now() - started > budgetMs) break;
-    await processItem(t.id);
-    summarized++;
+    const r = await processItem(t.id);
+    if (r.ok) { summarized++; continue; }
+    // A rejected key or an empty balance fails every item the same way: stop and say why.
+    if (/api key|authentication|credit|balance|401|403/i.test(r.error)) return { embedded, summarized, stopped: r.error.slice(0, 120) };
   }
   return { embedded, summarized };
 }
