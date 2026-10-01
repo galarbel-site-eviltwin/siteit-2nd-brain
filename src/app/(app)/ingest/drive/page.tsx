@@ -45,18 +45,23 @@ export default async function DrivePage({ searchParams }: PageProps<"/ingest/dri
   const inside = typeof sp.in === "string" ? sp.in : null;
   let drives: { id: string; name: string }[] = [];
   let folders: { id: string; name: string }[] = [];
-  let place: { label: string; driveId?: string; parentId?: string } | null = null;
+  let place: { label: string; driveId?: string; parentId?: string; up?: string } | null = null;
   let apiError: string | null = null;
   if (picking && svc) {
     try {
       const token = await accessToken();
       drives = await listSharedDrives(token);
-      if (where === "shared" && !inside) { place = { label: "משותף איתי" }; folders = await listSharedWithMeFolders(token); }
+      if (where === "shared" && !inside) { place = { label: "משותף איתי", up: q("") }; folders = await listSharedWithMeFolders(token); }
       else if (where) {
         const driveId = where === "my" || where === "shared" ? undefined : where;
         const parentId = inside ?? (where === "my" ? "root" : where);
-        const label = inside ? (await getFolder(token, inside)).name : where === "my" ? "האחסון שלי" : drives.find((d) => d.id === where)?.name ?? "Drive";
-        place = { label, driveId, parentId };
+        const here = inside ? await getFolder(token, inside) : null;
+        const label = here ? here.name : where === "my" ? "האחסון שלי" : drives.find((d) => d.id === where)?.name ?? "Drive";
+        // One level up: the parent folder, unless the parent is the top of this Drive.
+        const parent = here?.parents?.[0];
+        const atTop = !parent || parent === driveId || (where === "my" && !(await getFolder(token, parent).then((p) => p.parents?.length).catch(() => 0)));
+        const up = here ? (atTop || where === "shared" ? q(where === "shared" ? "&drive=shared" : `&drive=${where}`) : q(`&drive=${where}&in=${parent}`)) : q("");
+        place = { label, driveId, parentId, up };
         folders = await listChildren(token, parentId, driveId, true);
       }
     } catch (e) {
@@ -74,10 +79,16 @@ export default async function DrivePage({ searchParams }: PageProps<"/ingest/dri
   const ignored = mapping.filter((m) => m.f.status === "ignored");
   const last = conn?.lastResult as { added: number; updated: number; failed: number; more: boolean } | null;
   const rootOf = (id: string | null) => roots.find((r) => r.id === id);
+  // "Back" walks one step back through the setup instead of leaving it.
+  const back = picking
+    ? place?.up ? { href: place.up, label: "חזרה" }
+      : svc ? { href: "/ingest/drive?add=1", label: "חזרה לבחירת סוג הלקוחות" }
+      : roots.length ? { href: "/ingest/drive", label: "Google Drive" } : { href: "/ingest", label: "קליטת מידע" }
+    : { href: "/ingest", label: "קליטת מידע" };
 
   return (
     <>
-      <Link href="/ingest" className="back"><ArrowRight size={20} />קליטת מידע</Link>
+      <Link href={back.href} className="back"><ArrowRight size={20} />{back.label}</Link>
       <div className="page-head"><h1 className="with-logo"><DriveIcon size={44} />Google Drive</h1><p>המוח עוקב אחרי תיקיות הלקוחות ב-Drive, וקולט לבד כל קובץ חדש או קובץ שהשתנה. בערך כל 15 דקות.</p></div>
       {err && <p className="alert" role="alert"><WarningCircle size={20} weight="fill" /> {err}</p>}
       {sp.synced && <p className="note">הסנכרון הסתיים: {String(sp.synced)} קבצים נקלטו או עודכנו{sp.more ? ". יש עוד, הם ייקלטו בסנכרון הבא" : ""}.</p>}
@@ -128,7 +139,7 @@ export default async function DrivePage({ searchParams }: PageProps<"/ingest/dri
                 </>
               ) : (
                 <>
-                  <p className="muted small" style={{ marginBottom: 10 }}><b>{place.label}</b>: לחץ על תיקייה כדי להיכנס אליה, או &quot;בחירה&quot; אם בתוכה יושבות תיקיות הלקוחות. <Link href={q("")}>חזרה</Link></p>
+                  <p className="muted small" style={{ marginBottom: 10 }}><b>{place.label}</b>: לחץ על תיקייה כדי להיכנס אליה, או &quot;בחירה&quot; אם בתוכה יושבות תיקיות הלקוחות.</p>
                   <div className="pick-list">
                     {place.parentId && place.parentId !== "root" && (
                       <form action={addRootAction}>

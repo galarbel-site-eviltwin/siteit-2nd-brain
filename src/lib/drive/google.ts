@@ -105,7 +105,7 @@ export async function listSharedWithMeFolders(token: string) {
 }
 
 export async function getFolder(token: string, id: string) {
-  return api<{ id: string; name: string; mimeType: string; driveId?: string }>(token, `/files/${id}`, { fields: "id, name, mimeType, driveId", supportsAllDrives: "true" });
+  return api<{ id: string; name: string; mimeType: string; driveId?: string; parents?: string[] }>(token, `/files/${id}`, { fields: "id, name, mimeType, driveId, parents", supportsAllDrives: "true" });
 }
 
 // The id out of anything a person pastes: a folder link, a sharing link, or the bare id.
