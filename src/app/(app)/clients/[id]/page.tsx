@@ -34,14 +34,13 @@ export default async function ClientSpace({ params, searchParams }: PageProps<"/
     db.select().from(clientAliases).where(eq(clientAliases.clientId, id)).orderBy(asc(clientAliases.kind)),
     db.select().from(contacts).where(eq(contacts.clientId, id)).orderBy(asc(contacts.name)),
     db.select().from(items).where(eq(items.clientId, id)).orderBy(desc(sql`coalesce(${items.occurredAt}, ${items.recordedAt})`)).limit(200),
-    db.select().from(events).where(eq(events.clientId, id)).orderBy(desc(events.startAt)).limit(60),
+    db.select({ id: events.id, title: events.title, startAt: events.startAt, ahead: sql<boolean>`${events.startAt} >= now()` }).from(events).where(eq(events.clientId, id)).orderBy(desc(events.startAt)).limit(60),
   ]);
   // The same meeting sits in several people's calendars: show it once.
   const seen = new Set<string>();
   const meetings = meetingRows.filter((m) => { const k = `${m.title.trim().toLowerCase()}|${m.startAt.getTime()}`; if (seen.has(k)) return false; seen.add(k); return true; });
-  const now = Date.now();
-  const upcoming = meetings.filter((m) => m.startAt.getTime() >= now).reverse().slice(0, 5);
-  const past = meetings.filter((m) => m.startAt.getTime() < now).slice(0, 5);
+  const upcoming = meetings.filter((m) => m.ahead).reverse().slice(0, 5);
+  const past = meetings.filter((m) => !m.ahead).slice(0, 5);
   const confirmed = timeline.filter((i) => i.assignment === "confirmed");
   const suggested = timeline.filter((i) => i.assignment === "suggested");
   const error = typeof sp.error === "string" ? errors[sp.error] : null;

@@ -9,7 +9,7 @@ type Row = { key: string; name: string; state: "waiting" | "uploading" | "done" 
 
 const ACCEPT = ".txt,.zip,.docx,.pdf,.md,.csv,.vtt,.srt,.m4a,.mp3,.wav,.ogg,.opus,.png,.jpg,.jpeg,.webp";
 
-export function Dropzone({ clientId, compact = false }: { clientId?: string; compact?: boolean }) {
+export function Dropzone({ clientId, topic, compact = false, label }: { clientId?: string; topic?: string; compact?: boolean; label?: string }) {
   const [over, setOver] = useState(false);
   const [rows, setRows] = useState<Row[]>([]);
   const input = useRef<HTMLInputElement>(null);
@@ -27,6 +27,7 @@ export function Dropzone({ clientId, compact = false }: { clientId?: string; com
         const body = new FormData();
         body.append("file", file);
         if (clientId) body.append("clientId", clientId);
+        if (topic) body.append("topic", topic);
         const res = await fetch("/api/ingest", { method: "POST", body });
         const json = await res.json().catch(() => ({ ok: false, error: "תשובה לא צפויה מהשרת" }));
         if (!json.ok) patch(key, { state: "error", error: json.error });
@@ -48,7 +49,7 @@ export function Dropzone({ clientId, compact = false }: { clientId?: string; com
         onDrop={(e) => { e.preventDefault(); setOver(false); send([...e.dataTransfer.files]); }}
       >
         <span className="drop-ic"><CloudArrowUp weight="bold" size={compact ? 32 : 48} /></span>
-        <b>{compact ? "גרור לכאן קבצים של הלקוח הזה" : "גרור לכאן ייצוא וואטסאפ, תמלול או מסמך"}</b>
+        <b>{label ?? (compact ? "גרור לכאן קבצים של הלקוח הזה" : "גרור לכאן ייצוא וואטסאפ, תמלול או מסמך")}</b>
         <span className="muted">או לחץ כדי לבחור. אפשר כמה קבצים ביחד, עד 25MB לקובץ.</span>
         <input ref={input} type="file" multiple accept={ACCEPT} className="sr-only" onChange={(e) => { send([...(e.target.files ?? [])]); e.target.value = ""; }} />
       </label>

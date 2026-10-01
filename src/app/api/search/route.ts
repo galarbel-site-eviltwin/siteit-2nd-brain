@@ -9,6 +9,7 @@ export async function GET(req: Request) {
   const u = new URL(req.url);
   const q = (u.searchParams.get("q") ?? "").trim();
   if (!q) return Response.json({ sources: [], client: null });
-  const { sources, client } = await findForPerson(q, u.searchParams.get("clientId") || null);
+  const scope = u.searchParams.get("clientId") || null;
+  const { sources, client } = await findForPerson(q, scope === "company" ? null : scope, scope === "company");
   return Response.json({ client, sources: sources.map((s) => ({ ...s, what: describe(s.kind as never, s.source as never).label })) });
 }

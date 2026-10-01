@@ -1,6 +1,7 @@
 import { after } from "next/server";
 import { processItem } from "@/lib/ai/summarize";
 import { ingestFile, MAX_BYTES } from "@/lib/ingest/pipeline";
+import { isTopic } from "@/lib/knowledge";
 import { getEmployee } from "@/lib/session";
 
 export const maxDuration = 120;
@@ -17,7 +18,8 @@ export async function POST(req: Request) {
   const clientId = typeof form.get("clientId") === "string" ? (form.get("clientId") as string) : null;
 
   const bytes = new Uint8Array(await file.arrayBuffer());
-  const result = await ingestFile({ bytes, name: file.name, type: file.type }, me, clientId || null);
+  const topic = form.get("topic");
+  const result = await ingestFile({ bytes, name: file.name, type: file.type }, me, isTopic(topic) ? null : clientId || null, isTopic(topic) ? { topic } : {});
   // Vectors and summary come after the response, so the upload never waits on the AI.
   if (result.ok && !result.duplicate) after(() => processItem(result.itemId));
   return Response.json(result, { status: result.ok ? 200 : 400 });

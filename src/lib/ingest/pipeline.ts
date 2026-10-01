@@ -21,7 +21,8 @@ const safeName = (n: string) => n.normalize("NFKD").replace(/[^\w.\-]+/g, "_").s
 
 // Optional context from a connected source (Drive): who it is, which client folder it came from, a fallback date.
 // externalLink: the file lives in a connected source (Drive); keep a link to it instead of a copy.
-export type IngestContext = { source?: "drive"; reason?: string; fallbackDate?: Date | null; externalLink?: string };
+// topic: company knowledge, filed under a topic instead of a client.
+export type IngestContext = { source?: "drive"; reason?: string; fallbackDate?: Date | null; externalLink?: string; topic?: string | null };
 
 export async function ingestFile(file: { bytes: Uint8Array; name: string; type: string }, by: Employee, clientId?: string | null, ctx: IngestContext = {}): Promise<IngestResult> {
   if (file.bytes.byteLength > MAX_BYTES) return { ok: false, error: "הקובץ גדול מ-25MB" };
@@ -44,7 +45,7 @@ export async function ingestFile(file: { bytes: Uint8Array; name: string; type: 
   await db.insert(items).values({
     id, kind: "document", source: ctx.source ?? "upload", title: file.name, fileName: file.name, mimeType: file.type || "application/octet-stream",
     sizeBytes: file.bytes.byteLength, storagePath: ctx.externalLink ? null : storagePath, contentHash, createdBy: by.id, status: "processing",
-    meta: ctx.externalLink ? { link: ctx.externalLink } : null,
+    meta: ctx.externalLink ? { link: ctx.externalLink } : null, topic: ctx.topic ?? null,
   });
 
   try {
@@ -54,7 +55,7 @@ export async function ingestFile(file: { bytes: Uint8Array; name: string; type: 
     if (ex.kind !== "text") {
       const kind = ex.kind === "audio" ? "voice_note" : "document";
       const source = ex.kind === "audio" && ZOOM_NAME.test(file.name) ? "zoom" : ctx.source ?? "upload";
-      await finish(id, { kind, source, status: "stored", error: ex.reason, occurredAt: ctx.fallbackDate ?? null }, chosenClient, { text: "", title: file.name, fileName: file.name, participants: [] }, ctx.reason);
+      await finish(id, { kind, source, status: "stored", error: ex.reason, occurredAt: ctx.fallbackDate ?? null }, chosenClient, { text: "", title: file.name, fileName: file.name, participants: [] }, ctx.reason, !!ctx.topic);
       await audit("item_ingested", by.email, { itemId: id, status: "stored" });
       return { ok: true, itemId: id };
     }
@@ -64,7 +65,7 @@ export async function ingestFile(file: { bytes: Uint8Array; name: string; type: 
       await db.insert(chunks).values(newChunks.map((c, seq) => ({ itemId: id, seq, text: c.text, speaker: c.speaker, startMs: c.startMs, at: c.at })));
     }
     await finish(id, { kind, source, title, occurredAt, participants, status: newChunks.length ? "ready" : "failed", error: newChunks.length ? null : "לא נמצא טקסט בקובץ", meta: { ...meta, chunks: newChunks.length, ...(ctx.externalLink ? { link: ctx.externalLink } : {}) } },
-      chosenClient, { text: ex.text, title, fileName: file.name, participants }, ctx.reason);
+      chosenClient, { text: ex.text, title, fileName: file.name, participants }, ctx.reason, !!ctx.topic);
     await audit("item_ingested", by.email, { itemId: id, kind, chunks: newChunks.length });
     return { ok: true, itemId: id };
   } catch (e) {
@@ -80,7 +81,10 @@ async function finish(
   chosenClient: string | null,
   forMatch: { text: string; title: string; fileName: string; participants: string[] },
   reason?: string,
+  company = false,
 ) {
+  // Company knowledge is never matched to a client.
+  if (company) { await db.update(items).set({ ...patch, clientId: null, assignment: "none", assignmentReason: null }).where(eq(items.id, id)); return; }
   let assignment: Partial<typeof items.$inferInsert> = { clientId: null, assignment: "none", assignmentReason: null };
   if (chosenClient) assignment = { clientId: chosenClient, assignment: "confirmed", assignmentReason: reason ?? "הועלה מתוך מרחב הלקוח" };
   else {

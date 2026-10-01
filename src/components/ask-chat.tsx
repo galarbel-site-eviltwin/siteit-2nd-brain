@@ -104,6 +104,7 @@ export function AskChat({ clients, initialClient }: { clients: Option[]; initial
           <span>היקף</span>
           <select value={clientId} onChange={(e) => { setClientId(e.target.value); setMessages([]); setFound(null); }}>
             <option value="">כל הלקוחות</option>
+            <option value="company">ידע החברה</option>
             {clients.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         </label>

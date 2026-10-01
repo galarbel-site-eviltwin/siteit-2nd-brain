@@ -9,7 +9,7 @@ const items = [
   { href: "/", label: "היום שלי", Icon: SunHorizon },
   { href: "/clients", label: "לקוחות", Icon: Buildings },
   { href: "/ask", label: "שאל את המוח", Icon: Sparkle },
-  { href: null, label: "ידע החברה", Icon: Books, phase: 9 },
+  { href: "/knowledge", label: "ידע החברה", Icon: Books },
   { href: "/ingest", label: "קליטת מידע", Icon: TrayArrowDown },
   { href: null, label: "לבדיקה", Icon: SealCheck, phase: 3 },
   { href: "/connections", label: "חיבורים", Icon: PlugsConnected },

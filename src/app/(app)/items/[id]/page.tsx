@@ -2,7 +2,8 @@ import { ArrowRight, DownloadSimple, Trash } from "@phosphor-icons/react/dist/ss
 import { asc, eq } from "drizzle-orm";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { deleteItemAction, summarizeItemAction, updateItemAction } from "../../actions";
+import { deleteItemAction, setTopicAction, summarizeItemAction, updateItemAction } from "../../actions";
+import { TOPICS, type Topic } from "@/lib/knowledge";
 import { ItemSummaryView } from "@/components/summary-view";
 import { AssignForm } from "@/components/assign-form";
 import { KindIcon, kindLabel } from "@/components/kind-icon";
@@ -49,13 +50,20 @@ export default async function ItemPage({ params, searchParams }: PageProps<"/ite
 
       <div className="grid-2 item-grid">
         <section className="card">
-          <h2>שיוך ללקוח</h2>
+          <h2>{it.topic ? "ידע החברה" : "שיוך ללקוח"}</h2>
+          {it.topic && <p className="small" style={{ marginBottom: 12 }}>שמור בידע החברה, בנושא <b>{TOPICS[it.topic as Topic]}</b>. אפשר להעביר לנושא אחר, או לשייך ללקוח במקום.</p>}
           <p className="small" style={{ marginBottom: 12 }}>
             {it.assignment === "confirmed" && <>שויך ל<b>{row.clientName}</b>. {it.assignmentReason}</>}
             {it.assignment === "suggested" && <>הצעה: <b>{row.clientName}</b>. {it.assignmentReason}. מחכה לאישור.</>}
             {it.assignment === "none" && "לא משויך ללקוח."}
           </p>
           <AssignForm itemId={id} clientId={it.clientId} options={options} suggested={it.assignment === "suggested"} back={`/items/${id}`} />
+          <form action={setTopicAction} className="topic-form">
+            <input type="hidden" name="itemId" value={id} />
+            <span className="muted small">{it.topic ? "נושא:" : "לא שייך ללקוח? להעביר לידע החברה:"}</span>
+            <select name="topic" defaultValue={it.topic ?? "procedures"} aria-label="נושא">{Object.entries(TOPICS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
+            <button className="btn btn-sm btn-ghost">{it.topic ? "עדכון" : "העברה"}</button>
+          </form>
         </section>
         <section className="card">
           <h2>פרטים</h2>

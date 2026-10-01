@@ -8,7 +8,8 @@ export type Source = {
   title: string; kind: string; source: string; occurredAt: string | null; clientId: string | null; clientName: string | null;
 };
 
-export type Scope = { clientId?: string | null; from?: string | null; to?: string | null };
+// company: only company knowledge (procedures, price lists...), never client material.
+export type Scope = { clientId?: string | null; from?: string | null; to?: string | null; company?: boolean };
 
 // Words that carry no meaning on their own in a question, including "what did X say in the last chat".
 const STOP = new Set(["של", "את", "על", "עם", "מה", "מי", "זה", "זו", "איך", "למה", "הוא", "היא", "לא", "כן", "אם", "או", "גם", "יש", "אין", "היה", "הם", "אני", "אנחנו", "לגבי", "כל", "אז", "כי", "רק", "עוד", "הזה", "הזאת", "שלנו", "שלו", "שלה", "אמר", "אמרה", "אמרו", "כתב", "כתבה", "שיחה", "בשיחה", "השיחה", "פגישה", "בפגישה", "הפגישה", "האחרונה", "האחרון", "אחרונה", "אחרון", "לקוח", "הלקוח", "קרה", "דיבר", "דיברנו", "תגיד", "תסכם", "סכם", "the", "and", "for", "what", "who", "how", "last"]);
@@ -20,6 +21,7 @@ export function words(q: string) {
 const scopeSql = (s: Scope) => sql`
   i.status = 'ready'
   ${s.clientId ? sql`and i.client_id = ${s.clientId} and i.assignment = 'confirmed'` : sql``}
+  ${s.company ? sql`and i.topic is not null` : sql``}
   ${s.from ? sql`and coalesce(c.at, i.occurred_at, i.recorded_at) >= ${s.from}::timestamptz` : sql``}
   ${s.to ? sql`and coalesce(c.at, i.occurred_at, i.recorded_at) < (${s.to}::date + 1)::timestamptz` : sql``}`;
 
@@ -116,7 +118,8 @@ export async function detectClient(query: string) {
 }
 
 // "Sources only": find the client in the question, search inside it, and if no topic is left, show its latest.
-export async function findForPerson(query: string, clientId?: string | null) {
+export async function findForPerson(query: string, clientId?: string | null, company = false) {
+  if (company) return { sources: await searchSources(query, { company: true }, 20), client: null };
   const found = clientId ? null : await detectClient(query);
   const scopeId = clientId || found?.id || null;
   const rest = found ? found.rest : query;

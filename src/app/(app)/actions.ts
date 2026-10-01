@@ -9,6 +9,7 @@ import { db } from "@/lib/db";
 import { clientAliases, clients, contacts, items } from "@/lib/db/schema";
 import { audit } from "@/lib/employees";
 import { normDomain, normName, normPhone } from "@/lib/ingest/match";
+import { isTopic } from "@/lib/knowledge";
 import { requireEmployee } from "@/lib/session";
 import { removeFile } from "@/lib/storage";
 
@@ -114,7 +115,7 @@ export async function assignItemAction(form: FormData) {
   const clientId = str(form, "clientId");
   const [before] = await db.select({ clientId: items.clientId, assignment: items.assignment }).from(items).where(eq(items.id, itemId)).limit(1);
   if (!before) return;
-  if (clientId) await db.update(items).set({ clientId, assignment: "confirmed", assignmentReason: `שויך ע"י ${me.name}` }).where(eq(items.id, itemId));
+  if (clientId) await db.update(items).set({ clientId, assignment: "confirmed", assignmentReason: `שויך ע"י ${me.name}`, topic: null }).where(eq(items.id, itemId));
   else await db.update(items).set({ clientId: null, assignment: "none", assignmentReason: null }).where(eq(items.id, itemId));
   await audit("item_assigned", me.email, { itemId, from: before.clientId, to: clientId || null, wasSuggested: before.assignment === "suggested" });
   revalidatePath("/ingest");
@@ -198,4 +199,18 @@ export async function bulkDeleteItemsAction(form: FormData) {
   revalidatePath("/ingest");
   revalidatePath("/clients");
   redirect(`/ingest?deleted=${allowed.length}${rows.length > allowed.length ? `&skipped=${rows.length - allowed.length}` : ""}`);
+}
+
+// Files an item under company knowledge (or moves it between topics). It stops belonging to any client.
+export async function setTopicAction(form: FormData) {
+  const me = await requireEmployee();
+  const itemId = str(form, "itemId"), topic = str(form, "topic");
+  if (!isTopic(topic)) return;
+  const [before] = await db.select({ clientId: items.clientId, assignment: items.assignment }).from(items).where(eq(items.id, itemId)).limit(1);
+  await db.update(items).set({ topic, clientId: null, assignment: "none", assignmentReason: null }).where(eq(items.id, itemId));
+  await audit("item_topic", me.email, { itemId, topic });
+  if (before?.clientId && before.assignment === "confirmed") after(() => summarizeClient(before.clientId!).catch(() => null));
+  revalidatePath(`/items/${itemId}`);
+  revalidatePath("/knowledge");
+  revalidatePath("/ingest");
 }

@@ -27,7 +27,8 @@ export default async function Ingest({ searchParams }: PageProps<"/ingest">) {
     db.select({ n: count() }).from(driveFolders).where(eq(driveFolders.status, "pending")),
   ]);
   const root = getRoots(conn?.config as DriveConfig).map((r) => r.name).join(", ") || null;
-  const waiting = rows.filter((r) => r.assignment !== "confirmed" && r.status !== "processing" && r.status !== "failed");
+  // Company knowledge has a topic instead of a client, so it never waits for assignment.
+  const waiting = rows.filter((r) => !r.topic && r.assignment !== "confirmed" && r.status !== "processing" && r.status !== "failed");
   const done = rows.filter((r) => !waiting.includes(r));
 
   return (
@@ -104,7 +105,7 @@ export default async function Ingest({ searchParams }: PageProps<"/ingest">) {
           <div key={it.id}>
             <Pick id={it.id} title={it.title} />
             <KindIcon kind={it.kind} source={it.source} size="sm" />
-            <span><Link href={`/items/${it.id}`}><b>{it.title}</b></Link><span className="sub">{it.status === "failed" ? it.error : it.clientName ? `שויך ל${it.clientName}` : ""}</span></span>
+            <span><Link href={`/items/${it.id}`}><b>{it.title}</b></Link><span className="sub">{it.status === "failed" ? it.error : it.topic ? "ידע החברה" : it.clientName ? `שויך ל${it.clientName}` : ""}</span></span>
             <span className="sub">{ago(it.recordedAt)}</span>
           </div>
         ))}

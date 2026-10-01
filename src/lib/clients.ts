@@ -45,7 +45,7 @@ export const recentItems = (limit = 40) =>
     .select({
       id: items.id, title: items.title, kind: items.kind, source: items.source, status: items.status, error: items.error, assignment: items.assignment,
       assignmentReason: items.assignmentReason, clientId: items.clientId, clientName: clients.name, occurredAt: items.occurredAt, recordedAt: items.recordedAt,
-      meta: items.meta, participants: items.participants,
+      meta: items.meta, participants: items.participants, topic: items.topic,
     })
     .from(items)
     .leftJoin(clients, eq(clients.id, items.clientId))

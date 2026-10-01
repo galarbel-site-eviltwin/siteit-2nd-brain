@@ -112,8 +112,10 @@ export const items = pgTable(
     meta: jsonb("meta"),
     summary: jsonb("summary").$type<ItemSummary>(),
     summarizedAt: timestamp("summarized_at", { withTimezone: true }),
+    // Company knowledge (procedures, price lists...) has a topic instead of a client. See lib/knowledge.
+    topic: text("topic"),
   },
-  (t) => [index("items_client").on(t.clientId), index("items_hash").on(t.contentHash), index("items_recorded").on(t.recordedAt)],
+  (t) => [index("items_client").on(t.clientId), index("items_topic").on(t.topic), index("items_hash").on(t.contentHash), index("items_recorded").on(t.recordedAt)],
 ).enableRLS();
 
 export const chunks = pgTable(

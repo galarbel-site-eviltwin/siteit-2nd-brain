@@ -9,7 +9,7 @@ export default async function Ask({ searchParams }: PageProps<"/ask">) {
   await requireEmployee();
   const sp = await searchParams;
   const options = await db.select({ id: clients.id, name: clients.name }).from(clients).where(eq(clients.status, "active")).orderBy(asc(clients.name));
-  const initial = typeof sp.client === "string" && options.some((o) => o.id === sp.client) ? sp.client : null;
+  const initial = typeof sp.client === "string" && (sp.client === "company" || options.some((o) => o.id === sp.client)) ? sp.client : null;
   return (
     <>
       <section className="brain-hero ask-hero">
