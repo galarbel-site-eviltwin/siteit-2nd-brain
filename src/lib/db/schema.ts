@@ -249,3 +249,20 @@ export const events = pgTable(
   },
   (t) => [uniqueIndex("events_key").on(t.accountId, t.externalId), index("events_start").on(t.startAt), index("events_client").on(t.clientId)],
 ).enableRLS();
+
+// ---------- personal area ----------
+
+// An employee's own notes. Only the author ever reads them: not other employees, not the brain's answers.
+export const notes = pgTable(
+  "notes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    employeeId: uuid("employee_id").notNull().references(() => employees.id, { onDelete: "cascade" }),
+    body: text("body").notNull(),
+    clientId: uuid("client_id").references(() => clients.id, { onDelete: "set null" }),
+    pinned: boolean("pinned").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("notes_employee").on(t.employeeId, t.pinned, t.updatedAt)],
+).enableRLS();

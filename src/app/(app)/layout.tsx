@@ -20,7 +20,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
           <Image className="logo-light" src="/brand/logo.png" sizes="180px" alt="SiteIt 2nd Brain" width={1759} height={894} />
           <Image className="logo-dark" src="/brand/logo-dark.png" sizes="180px" alt="SiteIt 2nd Brain" width={1759} height={894} />
         </div>
-        <Nav isAdmin={me.role === "admin"} />
+        <Nav />
         <div className="side-foot">
           <div className="me">
             <span className="av">{initials(me.name)}</span>
