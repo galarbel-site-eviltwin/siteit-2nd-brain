@@ -124,11 +124,15 @@ const EXPORT: Record<string, { mime: string; ext: string }> = {
   "application/vnd.google-apps.spreadsheet": { mime: "text/csv", ext: "csv" },
 };
 
+// Only what the brain can read today. Images, video, audio, 3D models and the rest stay in Drive untouched.
+const READABLE_EXT = /.(pdf|docx|txt|md|csv|vtt|srt)$/i;
 export function isSyncable(f: DriveFile) {
   if (f.mimeType === FOLDER) return false;
   if (f.mimeType.startsWith("application/vnd.google-apps.")) return f.mimeType in EXPORT;
-  return true;
+  return READABLE_EXT.test(f.name) || f.mimeType === "application/pdf" || f.mimeType.startsWith("text/");
 }
+
+export const driveLink = (id: string) => `https://drive.google.com/open?id=${id}`;
 
 export async function download(token: string, f: DriveFile): Promise<{ bytes: Uint8Array; name: string; type: string }> {
   const exp = EXPORT[f.mimeType];

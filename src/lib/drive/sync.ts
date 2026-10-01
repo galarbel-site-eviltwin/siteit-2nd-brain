@@ -4,7 +4,7 @@ import { clientAliases, clients, connections, driveFiles, driveFolders, employee
 import { DOMAIN_RE, NOISE, normDomain, normName } from "@/lib/ingest/match";
 import { ingestFile, MAX_BYTES } from "@/lib/ingest/pipeline";
 import { deleteItem } from "@/lib/items";
-import { accessToken, download, FOLDER, getConnection, getRoots, isSyncable, listChildren, type DriveConfig, type DriveFile } from "./google";
+import { accessToken, download, driveLink, FOLDER, getConnection, getRoots, isSyncable, listChildren, type DriveConfig, type DriveFile } from "./google";
 
 export type SyncResult = { ok: true; added: number; updated: number; failed: number; newFolders: number; more: boolean } | { ok: false; reason: string };
 
@@ -122,7 +122,7 @@ export async function syncDrive({ budgetMs = 240_000, maxFiles = 40 } = {}): Pro
             const [old] = await db.select({ source: items.source }).from(items).where(eq(items.id, prev.itemId)).limit(1);
             if (old?.source === "drive") await deleteItem(prev.itemId);
           }
-          const r = await ingestFile(file, owner, fo.clientId, { source: "drive", reason: REASON, fallbackDate: new Date(f.createdTime) });
+          const r = await ingestFile(file, owner, fo.clientId, { source: "drive", reason: REASON, fallbackDate: new Date(f.createdTime), externalLink: driveLink(f.id) });
           await record({ version, itemId: r.ok ? r.itemId : null, skipped: r.ok ? null : r.error });
           if (prev) updated++; else added++;
         } catch (e) {

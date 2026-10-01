@@ -20,7 +20,8 @@ export type IngestResult =
 const safeName = (n: string) => n.normalize("NFKD").replace(/[^\w.\-]+/g, "_").slice(-90) || "file";
 
 // Optional context from a connected source (Drive): who it is, which client folder it came from, a fallback date.
-export type IngestContext = { source?: "drive"; reason?: string; fallbackDate?: Date | null };
+// externalLink: the file lives in a connected source (Drive); keep a link to it instead of a copy.
+export type IngestContext = { source?: "drive"; reason?: string; fallbackDate?: Date | null; externalLink?: string };
 
 export async function ingestFile(file: { bytes: Uint8Array; name: string; type: string }, by: Employee, clientId?: string | null, ctx: IngestContext = {}): Promise<IngestResult> {
   if (file.bytes.byteLength > MAX_BYTES) return { ok: false, error: "הקובץ גדול מ-25MB" };
@@ -42,11 +43,12 @@ export async function ingestFile(file: { bytes: Uint8Array; name: string; type: 
   const storagePath = `${now.getUTCFullYear()}/${String(now.getUTCMonth() + 1).padStart(2, "0")}/${id}/${safeName(file.name)}`;
   await db.insert(items).values({
     id, kind: "document", source: ctx.source ?? "upload", title: file.name, fileName: file.name, mimeType: file.type || "application/octet-stream",
-    sizeBytes: file.bytes.byteLength, storagePath, contentHash, createdBy: by.id, status: "processing",
+    sizeBytes: file.bytes.byteLength, storagePath: ctx.externalLink ? null : storagePath, contentHash, createdBy: by.id, status: "processing",
+    meta: ctx.externalLink ? { link: ctx.externalLink } : null,
   });
 
   try {
-    await putFile(storagePath, file.bytes, file.type || "application/octet-stream");
+    if (!ctx.externalLink) await putFile(storagePath, file.bytes, file.type || "application/octet-stream");
     const ex = await extractText(file.bytes, file.name);
 
     if (ex.kind !== "text") {
@@ -94,7 +96,7 @@ export async function ingestFile(file: { bytes: Uint8Array; name: string; type: 
     if (newChunks.length) {
       await db.insert(chunks).values(newChunks.map((c, seq) => ({ itemId: id, seq, text: c.text, speaker: c.speaker, startMs: c.startMs, at: c.at })));
     }
-    await finish(id, { kind, source, title, occurredAt, participants, status: newChunks.length ? "ready" : "failed", error: newChunks.length ? null : "לא נמצא טקסט בקובץ", meta: { ...meta, chunks: newChunks.length } },
+    await finish(id, { kind, source, title, occurredAt, participants, status: newChunks.length ? "ready" : "failed", error: newChunks.length ? null : "לא נמצא טקסט בקובץ", meta: { ...meta, chunks: newChunks.length, ...(ctx.externalLink ? { link: ctx.externalLink } : {}) } },
       chosenClient, { text, title, fileName: file.name, participants }, ctx.reason);
     await audit("item_ingested", by.email, { itemId: id, kind, chunks: newChunks.length });
     return { ok: true, itemId: id };
