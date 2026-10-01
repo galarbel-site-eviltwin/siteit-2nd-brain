@@ -4,7 +4,7 @@ import { clientAliases, clients, connections, driveFiles, driveFolders, employee
 import { normName } from "@/lib/ingest/match";
 import { ingestFile, MAX_BYTES } from "@/lib/ingest/pipeline";
 import { deleteItem } from "@/lib/items";
-import { accessToken, download, FOLDER, getConnection, isSyncable, listChildren, type DriveConfig, type DriveFile } from "./google";
+import { accessToken, download, FOLDER, getConnection, getRoots, isSyncable, listChildren, type DriveConfig, type DriveFile } from "./google";
 
 export type SyncResult = { ok: true; added: number; updated: number; failed: number; newFolders: number; more: boolean } | { ok: false; reason: string };
 
@@ -31,8 +31,8 @@ async function suggestFor(name: string) {
 export async function syncDrive({ budgetMs = 240_000, maxFiles = 40 } = {}): Promise<SyncResult> {
   const conn = await getConnection();
   if (!conn?.tokenEnc) return { ok: false, reason: "not_connected" };
-  const cfg = (conn.config ?? {}) as DriveConfig;
-  if (!cfg.rootFolderId) return { ok: false, reason: "no_root" };
+  const roots = getRoots(conn.config as DriveConfig);
+  if (!roots.length) return { ok: false, reason: "no_root" };
 
   const [lease] = await db.update(connections).set({ lockedUntil: sql`now() + interval '5 minutes'`, lastSyncAt: new Date() })
     .where(and(eq(connections.id, conn.id), or(isNull(connections.lockedUntil), lt(connections.lockedUntil, sql`now()`)))).returning({ id: connections.id });
@@ -45,22 +45,25 @@ export async function syncDrive({ budgetMs = 240_000, maxFiles = 40 } = {}): Pro
     if (!owner?.active) throw new Error("מי שחיבר את ה-Drive כבר לא פעיל. צריך לחבר מחדש");
     const token = await accessToken();
 
-    // 1. Client folders directly under the root.
-    const folders = await listChildren(token, cfg.rootFolderId, cfg.driveId, true);
+    // 1. Client folders directly under each root.
     const known = new Map((await db.select().from(driveFolders)).map((f) => [f.folderId, f]));
-    for (const f of folders) {
-      const k = known.get(f.id);
-      if (!k) {
-        await db.insert(driveFolders).values({ folderId: f.id, name: f.name, status: "pending", suggestedClientId: await suggestFor(f.name) });
-        newFolders++;
-      } else if (k.name !== f.name) await db.update(driveFolders).set({ name: f.name }).where(eq(driveFolders.folderId, f.id));
+    const folders: (DriveFile & { driveId?: string })[] = [];
+    for (const root of roots) {
+      for (const f of await listChildren(token, root.id, root.driveId, true)) {
+        folders.push({ ...f, driveId: root.driveId });
+        const k = known.get(f.id);
+        if (!k) {
+          await db.insert(driveFolders).values({ folderId: f.id, name: f.name, rootId: root.id, status: "pending", suggestedClientId: await suggestFor(f.name) });
+          newFolders++;
+        } else if (k.name !== f.name || k.rootId !== root.id) await db.update(driveFolders).set({ name: f.name, rootId: root.id }).where(eq(driveFolders.folderId, f.id));
+      }
     }
 
     // 2. Files in folders a person has linked to a client.
     const mapped = (await db.select().from(driveFolders).where(eq(driveFolders.status, "mapped"))).filter((f) => f.clientId && folders.some((x) => x.id === f.folderId));
     outer: for (const fo of mapped) {
       const seen = new Map((await db.select().from(driveFiles).where(eq(driveFiles.folderId, fo.folderId))).map((s) => [s.fileId, s]));
-      for (const f of await walk(token, fo.folderId, cfg.driveId)) {
+      for (const f of await walk(token, fo.folderId, folders.find((x) => x.id === fo.folderId)?.driveId)) {
         if (!isSyncable(f)) continue;
         const version = f.version ?? f.modifiedTime;
         const prev = seen.get(f.id);

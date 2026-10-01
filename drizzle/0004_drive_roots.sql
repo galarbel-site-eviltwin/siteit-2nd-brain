@@ -1,0 +1,1 @@
+ALTER TABLE "drive_folders" ADD COLUMN "root_id" text;

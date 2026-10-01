@@ -9,7 +9,22 @@ export const DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.readonly";
 const API = "https://www.googleapis.com/drive/v3";
 
 export type DriveFile = { id: string; name: string; mimeType: string; modifiedTime: string; createdTime: string; version?: string; size?: string; parents?: string[] };
-export type DriveConfig = { driveId?: string; rootFolderId?: string; rootName?: string };
+// A top folder that holds client folders, and the services its clients get by default.
+export type DriveRoot = { id: string; name: string; driveId?: string; services: string[] };
+export type DriveConfig = { roots?: DriveRoot[]; driveId?: string; rootFolderId?: string; rootName?: string };
+
+// Reads both shapes: the single-root config from before, and the list of roots.
+export function getRoots(cfg: DriveConfig | null | undefined): DriveRoot[] {
+  if (!cfg) return [];
+  if (cfg.roots) return cfg.roots;
+  return cfg.rootFolderId ? [{ id: cfg.rootFolderId, name: cfg.rootName ?? "Drive", driveId: cfg.driveId, services: [] }] : [];
+}
+
+export const SERVICE_SETS: Record<string, { label: string; services: string[] }> = {
+  seo: { label: "קידום (SEO ו-GEO)", services: ["seo", "geo"] },
+  web: { label: "בניית אתרים", services: ["web"] },
+  none: { label: "בלי שירות קבוע", services: [] },
+};
 
 export const redirectUri = (origin: string) => `${origin}/api/connect/drive/callback`;
 

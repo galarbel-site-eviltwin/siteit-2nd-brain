@@ -7,7 +7,7 @@ import { KindIcon } from "@/components/kind-icon";
 import { clientOptions, recentItems } from "@/lib/clients";
 import { db } from "@/lib/db";
 import { driveFolders } from "@/lib/db/schema";
-import { getConnection, type DriveConfig } from "@/lib/drive/google";
+import { getConnection, getRoots, type DriveConfig } from "@/lib/drive/google";
 import { ago, fmtDate } from "@/lib/format";
 import { requireEmployee } from "@/lib/session";
 
@@ -17,7 +17,7 @@ export default async function Ingest() {
     recentItems(60), clientOptions(), getConnection(),
     db.select({ n: count() }).from(driveFolders).where(eq(driveFolders.status, "pending")),
   ]);
-  const root = (conn?.config as DriveConfig | null)?.rootName;
+  const root = getRoots(conn?.config as DriveConfig).map((r) => r.name).join(", ") || null;
   const waiting = rows.filter((r) => r.assignment !== "confirmed" && r.status !== "processing" && r.status !== "failed");
   const done = rows.filter((r) => !waiting.includes(r));
 
