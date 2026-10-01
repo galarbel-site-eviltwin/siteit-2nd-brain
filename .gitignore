@@ -17,6 +17,3 @@ next-env.d.ts
 npm-debug.log*
 .vercel
 coverage
-
-.vercel
-.env*
