@@ -50,6 +50,13 @@
       "when": 1790851347505,
       "tag": "0006_dizzy_smiling_tiger",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790851910261,
+      "tag": "0007_same_rawhide_kid",
+      "breakpoints": true
     }
   ]
 }

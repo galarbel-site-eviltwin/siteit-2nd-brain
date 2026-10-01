@@ -2,7 +2,8 @@ import { ArrowRight, DownloadSimple, Trash } from "@phosphor-icons/react/dist/ss
 import { asc, eq } from "drizzle-orm";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { deleteItemAction, updateItemAction } from "../../actions";
+import { deleteItemAction, summarizeItemAction, updateItemAction } from "../../actions";
+import { ItemSummaryView } from "@/components/summary-view";
 import { AssignForm } from "@/components/assign-form";
 import { KindIcon, kindLabel } from "@/components/kind-icon";
 import { arrival } from "@/lib/item-label";
@@ -12,9 +13,10 @@ import { chunks, clients, employees, items } from "@/lib/db/schema";
 import { fmtDateTime, isoDay, msToClock } from "@/lib/format";
 import { requireEmployee } from "@/lib/session";
 
-export default async function ItemPage({ params }: PageProps<"/items/[id]">) {
+export default async function ItemPage({ params, searchParams }: PageProps<"/items/[id]">) {
   const me = await requireEmployee();
   const { id } = await params;
+  const aiError = (await searchParams).error === "ai";
   const [row] = await db
     .select({ item: items, clientName: clients.name, byName: employees.name })
     .from(items).leftJoin(clients, eq(clients.id, items.clientId)).leftJoin(employees, eq(employees.id, items.createdBy))
@@ -75,6 +77,11 @@ export default async function ItemPage({ params }: PageProps<"/items/[id]">) {
         </section>
       </div>
 
+      {aiError && <p className="alert" role="alert" style={{ marginTop: 22 }}>המוח לא הצליח לכתוב ניתוח כרגע. אפשר לנסות שוב בעוד רגע.</p>}
+      {it.status === "ready" && (
+        <div style={{ marginTop: 22 }}><ItemSummaryView summary={it.summary} at={it.summarizedAt} itemId={id} action={summarizeItemAction} /></div>
+      )}
+
       <section className="card" style={{ marginTop: 22 }}>
         <h2>מה המוח קרא</h2>
         {it.status === "stored" && <p className="muted">{it.error}</p>}
@@ -82,7 +89,7 @@ export default async function ItemPage({ params }: PageProps<"/items/[id]">) {
         {parts.length > 0 && <p className="muted small" style={{ marginBottom: 14 }}>{parts.length} קטעים. כך המוח יצטט את הפריט בתשובות.</p>}
         <div className="chunks">
           {parts.map((p) => (
-            <article key={p.id} className="chunk">
+            <article key={p.id} className="chunk" id={`c${p.seq}`}>
               <span className="chunk-meta">
                 {p.startMs != null && <span className="ltr">{msToClock(p.startMs)}</span>}
                 {p.at && <span>{fmtDateTime(p.at)}</span>}

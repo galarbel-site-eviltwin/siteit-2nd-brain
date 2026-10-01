@@ -1,3 +1,5 @@
+import { after } from "next/server";
+import { processItem } from "@/lib/ai/summarize";
 import { ingestFile, MAX_BYTES } from "@/lib/ingest/pipeline";
 import { getEmployee } from "@/lib/session";
 
@@ -16,5 +18,7 @@ export async function POST(req: Request) {
 
   const bytes = new Uint8Array(await file.arrayBuffer());
   const result = await ingestFile({ bytes, name: file.name, type: file.type }, me, clientId || null);
+  // Vectors and summary come after the response, so the upload never waits on the AI.
+  if (result.ok && !result.duplicate) after(() => processItem(result.itemId));
   return Response.json(result, { status: result.ok ? 200 : 400 });
 }

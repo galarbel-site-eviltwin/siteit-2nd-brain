@@ -13,8 +13,10 @@
     "db:seed": "tsx scripts/seed-employees.ts"
   },
   "dependencies": {
+    "@ai-sdk/react": "^4.0.129",
     "@phosphor-icons/react": "^2.1.10",
     "@supabase/supabase-js": "^2.117.2",
+    "ai": "^7.0.126",
     "drizzle-orm": "^0.45.3",
     "fflate": "^0.8.3",
     "mammoth": "^1.13.0",
@@ -23,7 +25,8 @@
     "postgres": "^3.4.9",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "unpdf": "^1.8.1"
+    "unpdf": "^1.8.1",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

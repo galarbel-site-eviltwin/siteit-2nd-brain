@@ -2,6 +2,8 @@
 
 import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
+import { processItem, summarizeClient, summarizeItem } from "@/lib/ai/summarize";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { clientAliases, clients, contacts, items } from "@/lib/db/schema";
@@ -118,6 +120,42 @@ export async function assignItemAction(form: FormData) {
   revalidatePath("/ingest");
   revalidatePath(`/items/${itemId}`);
   if (clientId) revalidatePath(`/clients/${clientId}`);
+  // Both clients' pictures change: the one that gained the item and the one that lost it.
+  after(async () => {
+    for (const c of new Set([clientId || null, before.assignment === "confirmed" ? before.clientId : null])) if (c) await summarizeClient(c).catch(() => null);
+  });
+}
+
+export async function summarizeItemAction(form: FormData) {
+  await requireEmployee();
+  const itemId = str(form, "itemId");
+  try {
+    await summarizeItem(itemId);
+    const [it] = await db.select({ clientId: items.clientId, assignment: items.assignment }).from(items).where(eq(items.id, itemId)).limit(1);
+    if (it?.clientId && it.assignment === "confirmed") after(() => summarizeClient(it.clientId!).catch(() => null));
+  } catch (e) {
+    console.error("summary failed", (e as Error).message);
+    redirect(`/items/${itemId}?error=ai`);
+  }
+  revalidatePath(`/items/${itemId}`);
+}
+
+export async function summarizeClientAction(form: FormData) {
+  await requireEmployee();
+  const clientId = str(form, "clientId");
+  try {
+    // Items without a summary yet get one first, so the picture covers everything.
+    const missing = await db.select({ id: items.id }).from(items).where(and(eq(items.clientId, clientId), eq(items.assignment, "confirmed"), eq(items.status, "ready"))).limit(40);
+    for (const m of missing) {
+      const [x] = await db.select({ at: items.summarizedAt }).from(items).where(eq(items.id, m.id)).limit(1);
+      if (!x?.at) await processItem(m.id);
+    }
+    await summarizeClient(clientId);
+  } catch (e) {
+    console.error("client summary failed", (e as Error).message);
+    redirect(`/clients/${clientId}?error=ai`);
+  }
+  revalidatePath(`/clients/${clientId}`);
 }
 
 export async function updateItemAction(form: FormData) {
@@ -140,6 +178,7 @@ export async function deleteItemAction(form: FormData) {
   if (it.path) await removeFile(it.path);
   await db.delete(items).where(eq(items.id, itemId));
   await audit("item_deleted", me.email, { itemId, title: it.title });
+  if (it.clientId) after(() => summarizeClient(it.clientId!).catch(() => null));
   revalidatePath("/ingest");
   redirect(it.clientId ? `/clients/${it.clientId}?tab=timeline` : "/ingest");
 }

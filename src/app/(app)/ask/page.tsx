@@ -1,9 +1,15 @@
-import { Microphone, Sparkle } from "@phosphor-icons/react/dist/ssr";
+import { asc, eq } from "drizzle-orm";
+import { AskChat } from "@/components/ask-chat";
 import { BrainAnim } from "@/components/brain/brain-anim";
+import { db } from "@/lib/db";
+import { clients } from "@/lib/db/schema";
 import { requireEmployee } from "@/lib/session";
 
-export default async function Ask() {
+export default async function Ask({ searchParams }: PageProps<"/ask">) {
   await requireEmployee();
+  const sp = await searchParams;
+  const options = await db.select({ id: clients.id, name: clients.name }).from(clients).where(eq(clients.status, "active")).orderBy(asc(clients.name));
+  const initial = typeof sp.client === "string" && options.some((o) => o.id === sp.client) ? sp.client : null;
   return (
     <>
       <section className="brain-hero ask-hero">
@@ -13,12 +19,7 @@ export default async function Ask() {
           <p>כל שאלה על לקוח, פגישה או החלטה, עם מקור לכל תשובה.</p>
         </div>
       </section>
-      <form className="ask-box">
-        <Sparkle size={28} weight="duotone" />
-        <label className="sr-only" htmlFor="q">שאלה למוח</label>
-        <input id="q" disabled placeholder="המוח עוד לומד. השאלות ייפתחו בשלב 2, אחרי שנקלוט את הפגישות הראשונות" />
-        <button type="button" disabled aria-label="שאלה בקול"><Microphone size={24} /></button>
-      </form>
+      <AskChat clients={options} initialClient={initial} />
     </>
   );
 }

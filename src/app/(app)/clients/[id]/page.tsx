@@ -2,10 +2,12 @@ import { ArrowRight, Globe, PencilSimple, Phone, Plus, Tag, Trash, User } from "
 import { asc, desc, eq, sql } from "drizzle-orm";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { addAliasAction, addContactAction, removeAliasAction, removeContactAction } from "../../actions";
+import { addAliasAction, addContactAction, removeAliasAction, removeContactAction, summarizeClientAction } from "../../actions";
+import { ClientMark } from "@/components/client-mark";
+import { ClientSummaryView } from "@/components/summary-view";
 import { Dropzone } from "@/components/dropzone";
 import { KindIcon, kindLabel } from "@/components/kind-icon";
-import { monoColor, SERVICES, STATUS, type Service } from "@/lib/clients";
+import { SERVICES, STATUS, type Service } from "@/lib/clients";
 import { db } from "@/lib/db";
 import { clientAliases, clients, contacts, employees, items } from "@/lib/db/schema";
 import { ago, fmtDate } from "@/lib/format";
@@ -16,6 +18,7 @@ const errors: Record<string, string> = {
   alias: "הערך הזה כבר משויך ללקוח אחר.",
   alias_short: "הערך קצר מדי.",
   contact: "לאיש קשר צריך שם.",
+  ai: "המוח לא הצליח לבנות תמונת מצב כרגע. אפשר לנסות שוב בעוד רגע.",
 };
 
 export default async function ClientSpace({ params, searchParams }: PageProps<"/clients/[id]">) {
@@ -40,7 +43,7 @@ export default async function ClientSpace({ params, searchParams }: PageProps<"/
     <>
       <Link href="/clients" className="back"><ArrowRight size={20} />כל הלקוחות</Link>
       <header className="chero">
-        <span className="mono xl" style={{ background: monoColor(client.id) }}>{client.name.trim()[0]}</span>
+        <ClientMark id={client.id} name={client.name} domain={aliases.find((a) => a.kind === "domain")?.value} size={72} />
         <div>
           <h1>{client.name}</h1>
           <div className="meta">
@@ -63,6 +66,7 @@ export default async function ClientSpace({ params, searchParams }: PageProps<"/
 
       {tab === "overview" ? (
         <div className="grid-2">
+          <div className="span-2"><ClientSummaryView summary={client.summary} at={client.summarizedAt} clientId={id} action={summarizeClientAction} /></div>
           <section className="card">
             <h2>אנשי קשר</h2>
             <div className="rows">

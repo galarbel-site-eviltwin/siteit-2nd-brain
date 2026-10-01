@@ -1,4 +1,13 @@
-import { boolean, index, integer, jsonb, pgEnum, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { boolean, index, integer, jsonb, pgEnum, pgTable, text, timestamp, uniqueIndex, uuid, vector } from "drizzle-orm/pg-core";
+
+// Every AI-written summary points back to the pieces it came from, so a reader can check it.
+export type Ref = { item?: string; seq: number };
+export type Point = { text: string; refs: Ref[] };
+export type ItemSummary = { about: string; points: Point[]; agreed: Point[]; open: Point[]; mood?: Point | null };
+export type ClientSummary = { overview: string; now: Point[]; open: Point[]; watch: Point[]; basedOn: number };
+
+export const EMBED_DIMS = 1536;
 
 export const employeeRole = pgEnum("employee_role", ["member", "admin"]);
 
@@ -34,6 +43,8 @@ export const clients = pgTable("clients", {
   services: text("services").array().notNull().default([]), // "seo" | "geo" | "web"
   ownerId: uuid("owner_id").references(() => employees.id, { onDelete: "set null" }),
   notes: text("notes"),
+  summary: jsonb("summary").$type<ClientSummary>(),
+  summarizedAt: timestamp("summarized_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 }).enableRLS();
@@ -99,6 +110,8 @@ export const items = pgTable(
     error: text("error"),
     participants: text("participants").array().notNull().default([]),
     meta: jsonb("meta"),
+    summary: jsonb("summary").$type<ItemSummary>(),
+    summarizedAt: timestamp("summarized_at", { withTimezone: true }),
   },
   (t) => [index("items_client").on(t.clientId), index("items_hash").on(t.contentHash), index("items_recorded").on(t.recordedAt)],
 ).enableRLS();
@@ -113,8 +126,14 @@ export const chunks = pgTable(
     speaker: text("speaker"),
     startMs: integer("start_ms"),
     at: timestamp("at", { withTimezone: true }),
+    embedding: vector("embedding", { dimensions: EMBED_DIMS }),
   },
-  (t) => [index("chunks_item").on(t.itemId, t.seq)],
+  (t) => [
+    index("chunks_item").on(t.itemId, t.seq),
+    index("chunks_embedding").using("hnsw", t.embedding.op("vector_cosine_ops")),
+    // Postgres has no Hebrew dictionary, so word search runs on trigrams.
+    index("chunks_trgm").using("gin", sql`${t.text} gin_trgm_ops`),
+  ],
 ).enableRLS();
 
 // ---------- connected sources ----------
