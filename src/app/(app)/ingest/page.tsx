@@ -1,4 +1,3 @@
-import { GoogleDriveLogo } from "@phosphor-icons/react/dist/ssr";
 import { count, eq } from "drizzle-orm";
 import Image from "next/image";
 import Link from "next/link";
@@ -29,7 +28,7 @@ export default async function Ingest() {
       <Dropzone />
 
       <Link href="/ingest/drive" className="card drive-card">
-        <span className="sq lg" data-src="media"><GoogleDriveLogo weight="fill" size={30} /></span>
+        <span className="sq lg plate"><img src="/brand/icons/google-drive.svg" alt="" width={34} height={34} /></span>
         <div>
           <b>{root ? `Google Drive: ${root}` : "חיבור Google Drive"}</b>
           <span className="muted small">{root ? (newFolders ? `${newFolders} תיקיות חדשות מחכות לקישור ללקוח` : "קבצים מתיקיות הלקוחות נקלטים לבד") : "המוח יקלוט לבד קבצים מתיקיות הלקוחות ב-Drive המשותף"}</span>

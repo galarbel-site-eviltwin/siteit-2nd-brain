@@ -171,3 +171,4 @@
 [data-src="wa"] { --c: #0fd084; --on: #06331f; }
 [data-src="doc"] { --c: #fcd200; --on: #3a2f00; }
 .how-ic { width: 56px; height: 56px; }
+.sq.plate { background: #fff; box-shadow: inset 0 0 0 1.5px var(--line); }

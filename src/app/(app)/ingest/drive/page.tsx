@@ -1,4 +1,4 @@
-import { ArrowRight, ArrowsClockwise, CheckCircle, Folder, FolderSimpleDashed, GoogleDriveLogo, LinkBreak, WarningCircle } from "@phosphor-icons/react/dist/ssr";
+import { ArrowRight, ArrowsClockwise, CheckCircle, Folder, FolderSimpleDashed, LinkBreak, WarningCircle } from "@phosphor-icons/react/dist/ssr";
 import { count, eq } from "drizzle-orm";
 import Link from "next/link";
 import { chooseRootAction, disconnectDriveAction, ignoreFolderAction, mapFolderAction, newClientFromFolderAction, resetFolderAction, syncNowAction } from "./actions";
@@ -60,12 +60,12 @@ export default async function DrivePage({ searchParams }: PageProps<"/ingest/dri
 
       {!conn ? (
         <section className="card connect">
-          <span className="sq lg" data-src="meet"><GoogleDriveLogo weight="fill" size={30} /></span>
+          <span className="sq lg plate"><img src="/brand/icons/google-drive.svg" alt="" width={34} height={34} /></span>
           <div>
             <h2>חיבור ה-Drive של החברה</h2>
             <p className="muted">מחברים פעם אחת, עם חשבון שיש לו גישה ל-Drive המשותף. המוח מקבל הרשאת קריאה בלבד: הוא לא משנה, לא מוחק ולא משתף שום קובץ.</p>
           </div>
-          <a href="/api/connect/drive/start" className="btn btn-primary"><GoogleDriveLogo size={20} weight="fill" />חיבור Google Drive</a>
+          <a href="/api/connect/drive/start" className="btn btn-primary"><img src="/brand/icons/google-drive.svg" alt="" width={20} height={20} />חיבור Google Drive</a>
         </section>
       ) : !cfg.rootFolderId ? (
         <section className="card">
@@ -75,7 +75,7 @@ export default async function DrivePage({ searchParams }: PageProps<"/ingest/dri
             <>
               <p className="muted small" style={{ marginBottom: 12 }}>בחר את ה-Drive המשותף.</p>
               <div className="pick-list">
-                {drives.map((d) => <Link key={d.id} href={`/ingest/drive?drive=${d.id}`} className="pick"><GoogleDriveLogo size={22} weight="fill" />{d.name}</Link>)}
+                {drives.map((d) => <Link key={d.id} href={`/ingest/drive?drive=${d.id}`} className="pick"><img src="/brand/icons/google-drive.svg" alt="" width={22} height={22} />{d.name}</Link>)}
                 {!apiError && drives.length === 0 && <p className="muted">לא נמצאו Drive-ים משותפים בחשבון {conn.accountEmail}.</p>}
               </div>
             </>
@@ -100,7 +100,7 @@ export default async function DrivePage({ searchParams }: PageProps<"/ingest/dri
       ) : (
         <>
           <section className="card connect">
-            <span className="sq lg" data-src="meet"><GoogleDriveLogo weight="fill" size={30} /></span>
+            <span className="sq lg plate"><img src="/brand/icons/google-drive.svg" alt="" width={34} height={34} /></span>
             <div>
               <h2>מחובר: {cfg.rootName}</h2>
               <p className="muted small">
