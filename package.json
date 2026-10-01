@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:seed": "tsx scripts/seed-employees.ts"
+    "db:seed": "tsx scripts/seed-employees.ts",
+    "db:backup": "tsx scripts/backup.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.71",
