@@ -1,26 +1,32 @@
-import { ArrowLeft, Buildings, CheckCircle, Circle, TrayArrowDown } from "@phosphor-icons/react/dist/ssr";
-import { count, eq } from "drizzle-orm";
+import { ArrowLeft, Buildings, CalendarBlank, CheckCircle, Circle, PlugsConnected, TrayArrowDown, VideoCamera } from "@phosphor-icons/react/dist/ssr";
+import { and, asc, count, eq, gte, lt } from "drizzle-orm";
 import Link from "next/link";
 import { KindIcon } from "@/components/kind-icon";
 import { pendingCount, recentItems } from "@/lib/clients";
 import { db } from "@/lib/db";
-import { clients, items } from "@/lib/db/schema";
+import { accounts, clients, events, items } from "@/lib/db/schema";
 import { ago } from "@/lib/format";
 import { requireEmployee } from "@/lib/session";
 
 // What the brain can do today, kept honest. Update when a phase lands.
 const done = [
-  "כניסה עם Google, רק לעובדי סייט איט שברשימה",
-  "לקוחות: יצירה, עריכה, אנשי קשר, דומיינים וכינויים",
-  "קליטה: ייצוא וואטסאפ, תמלולי פגישות, PDF, DOCX וטקסט",
-  "הצעת שיוך אוטומטית ללקוח, עם אישור של אדם",
-  "ציר זמן לכל לקוח לפי מתי שדברים קרו",
+  "לקוחות, אנשי קשר, דומיינים וציר זמן לכל לקוח",
+  "קליטה: וואטסאפ, Timeless, Zoom, מסמכים ו-Google Drive",
+  "Gmail ויומן Google: מיילים עם לקוחות ופגישות",
+  "שאל את המוח: חיפוש במקורות עם הפניה לכל קטע",
 ];
 const next = [
-  "שלב 2: שאל את המוח, עם ציטוט מקור לכל תשובה",
-  "תמלול הקלטות וקריאת טקסט מצילומי מסך",
-  "שלב 3: חילוץ החלטות, התחייבויות ומחירים לבדיקה",
+  "ניתוח ותשובות של המוח (מחכה למפתח Claude)",
+  "Outlook ויומן Microsoft",
+  "ידע החברה ותור לבדיקה",
 ];
+
+const dayKey = (d: Date) => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Jerusalem" }).format(d);
+const hm = new Intl.DateTimeFormat("he-IL", { timeZone: "Asia/Jerusalem", hour: "2-digit", minute: "2-digit" });
+const dayName = (d: Date) => {
+  const k = dayKey(d), today = dayKey(new Date()), tomorrow = dayKey(new Date(Date.now() + 86400_000));
+  return k === today ? "היום" : k === tomorrow ? "מחר" : new Intl.DateTimeFormat("he-IL", { timeZone: "Asia/Jerusalem", weekday: "long", day: "numeric", month: "numeric" }).format(d);
+};
 
 const greeting = () => {
   const h = Number(new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Jerusalem", hour: "numeric", hourCycle: "h23" }).format(new Date()));
@@ -35,6 +41,16 @@ export default async function Today() {
     pendingCount(),
     recentItems(6),
   ]);
+  // My meetings for the coming week, from my own connected calendar.
+  const [acc] = await db.select({ id: accounts.id }).from(accounts).where(eq(accounts.employeeId, me.id)).limit(1);
+  const startOfToday = new Date(`${dayKey(new Date())}T00:00:00+03:00`);
+  const meetings = acc
+    ? await db.select({ e: events, clientName: clients.name }).from(events).leftJoin(clients, eq(clients.id, events.clientId))
+        .where(and(eq(events.accountId, acc.id), gte(events.startAt, startOfToday), lt(events.startAt, new Date(startOfToday.getTime() + 7 * 86400_000))))
+        .orderBy(asc(events.startAt)).limit(30)
+    : [];
+  const byDay = new Map<string, typeof meetings>();
+  for (const m of meetings) { const k = dayName(m.e.startAt); byDay.set(k, [...(byDay.get(k) ?? []), m]); }
 
   return (
     <>
@@ -49,6 +65,28 @@ export default async function Today() {
         <Link href="/ingest" className="card stat"><TrayArrowDown size={26} /><b>{itemCount}</b><span>פריטים שהמוח מכיר</span></Link>
         <Link href="/ingest" className={`card stat ${pending ? "attn" : ""}`}><CheckCircle size={26} /><b>{pending}</b><span>מחכים לשיוך</span></Link>
       </div>
+
+      <section className="card meetings">
+        <div className="card-head"><h2><CalendarBlank size={22} />הפגישות שלי השבוע</h2>{acc && <Link href="/connections" className="btn btn-sm btn-ghost">חיבורים<ArrowLeft size={16} /></Link>}</div>
+        {!acc ? (
+          <p className="muted">כדי לראות כאן את הפגישות, צריך לחבר את היומן שלך. <Link href="/connections" className="btn btn-sm btn-primary" style={{ marginInlineStart: 8 }}><PlugsConnected size={16} />חיבור Gmail ויומן</Link></p>
+        ) : meetings.length === 0 ? (
+          <p className="muted">אין פגישות עם אנשים נוספים בשבוע הקרוב.</p>
+        ) : (
+          [...byDay.entries()].map(([d, list]) => (
+            <div key={d} className="mday">
+              <h3>{d}</h3>
+              {list.map(({ e, clientName }) => (
+                <div key={e.id} className="meet">
+                  <span className="meet-time ltr">{e.allDay ? "כל היום" : hm.format(e.startAt)}</span>
+                  <span className="meet-body"><b>{e.title}</b><span className="sub">{clientName ? <Link href={`/clients/${e.clientId}`}>{clientName}</Link> : `${e.attendees.length} משתתפים`}</span></span>
+                  {e.link && <a className="btn btn-sm btn-ghost" href={e.link} target="_blank" rel="noreferrer"><VideoCamera size={16} />הצטרפות</a>}
+                </div>
+              ))}
+            </div>
+          ))
+        )}
+      </section>
 
       <div className="grid-2">
         <section className="card">

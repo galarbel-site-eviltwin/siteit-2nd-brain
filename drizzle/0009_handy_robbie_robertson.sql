@@ -1,0 +1,1 @@
+ALTER TABLE "mail_threads" ADD COLUMN "history_id" text;

@@ -36,7 +36,7 @@ export function authUrl(origin: string, state: string) {
   return `https://accounts.google.com/o/oauth2/v2/auth?${p}`;
 }
 
-async function tokenRequest(body: Record<string, string>) {
+export async function tokenRequest(body: Record<string, string>) {
   const res = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({ client_id: process.env.AUTH_GOOGLE_ID!, client_secret: process.env.AUTH_GOOGLE_SECRET!, ...body }),

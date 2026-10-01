@@ -44,7 +44,7 @@ export default async function ItemPage({ params, searchParams }: PageProps<"/ite
           </div>
           {it.participants.length > 0 && <div className="tags" style={{ marginTop: 10 }}>{it.participants.slice(0, 12).map((p) => <span key={p} className="tag">{p}</span>)}</div>}
         </div>
-        {(it.storagePath || (it.meta as { link?: string } | null)?.link) && <a className="btn btn-ghost btn-sm head-action" href={`/api/items/${id}/file`} target={it.storagePath ? undefined : "_blank"} rel="noreferrer"><DownloadSimple size={18} />{it.storagePath ? "הקובץ המקורי" : "פתיחה ב-Drive"}</a>}
+        {(it.storagePath || (it.meta as { link?: string } | null)?.link) && <a className="btn btn-ghost btn-sm head-action" href={`/api/items/${id}/file`} target={it.storagePath ? undefined : "_blank"} rel="noreferrer"><DownloadSimple size={18} />{it.storagePath ? "הקובץ המקורי" : it.source === "gmail" ? "פתיחה ב-Gmail" : it.source === "outlook" ? "פתיחה ב-Outlook" : "פתיחה ב-Drive"}</a>}
       </header>
 
       <div className="grid-2 item-grid">

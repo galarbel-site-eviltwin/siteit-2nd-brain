@@ -57,6 +57,20 @@
       "when": 1790851910261,
       "tag": "0007_same_rawhide_kid",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1790855147617,
+      "tag": "0008_long_stranger",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1790855230552,
+      "tag": "0009_handy_robbie_robertson",
+      "breakpoints": true
     }
   ]
 }

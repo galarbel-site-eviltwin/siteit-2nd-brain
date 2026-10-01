@@ -81,8 +81,8 @@ export const contacts = pgTable(
 
 // ---------- ingested knowledge ----------
 
-export const itemKind = pgEnum("item_kind", ["meeting", "chat", "document", "voice_note", "note"]);
-export const itemSource = pgEnum("item_source", ["timeless", "whatsapp", "upload", "manual", "drive", "zoom"]);
+export const itemKind = pgEnum("item_kind", ["meeting", "chat", "document", "voice_note", "note", "email"]);
+export const itemSource = pgEnum("item_source", ["timeless", "whatsapp", "upload", "manual", "drive", "zoom", "gmail", "outlook"]);
 export const assignmentStatus = pgEnum("assignment_status", ["none", "suggested", "confirmed"]);
 // stored = kept, but its content cannot be read yet (audio, images): honest about what was ingested.
 export const ingestStatus = pgEnum("ingest_status", ["processing", "ready", "stored", "failed"]);
@@ -187,3 +187,63 @@ export const driveFiles = pgTable(
 export type Employee = typeof employees.$inferSelect;
 export type Client = typeof clients.$inferSelect;
 export type Item = typeof items.$inferSelect;
+
+// ---------- personal accounts (mail and calendar) ----------
+
+export const accountProvider = pgEnum("account_provider", ["google", "microsoft"]);
+
+// Each employee connects their own mailbox and calendar. Only threads with known clients are ever read in full.
+export const accounts = pgTable(
+  "accounts",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    employeeId: uuid("employee_id").notNull().references(() => employees.id, { onDelete: "cascade" }),
+    provider: accountProvider("provider").notNull(),
+    email: text("email").notNull(),
+    tokenEnc: text("token_enc").notNull(),
+    scopes: text("scopes"),
+    // Mail backfill walks pages of the last 12 months, then switches to "since last sync".
+    mailState: jsonb("mail_state").$type<{ pageToken?: string | null; backfillDone?: boolean; since?: string | null }>(),
+    lastSyncAt: timestamp("last_sync_at", { withTimezone: true }),
+    lastError: text("last_error"),
+    lastResult: jsonb("last_result"),
+    lockedUntil: timestamp("locked_until", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("accounts_employee_provider").on(t.employeeId, t.provider)],
+).enableRLS();
+
+// One mail thread is one item; the thread grows, the item is rebuilt.
+export const mailThreads = pgTable(
+  "mail_threads",
+  {
+    accountId: uuid("account_id").notNull().references(() => accounts.id, { onDelete: "cascade" }),
+    threadId: text("thread_id").notNull(),
+    itemId: uuid("item_id").references(() => items.id, { onDelete: "set null" }),
+    messageCount: integer("message_count").notNull().default(0),
+    historyId: text("history_id"),
+    skipped: text("skipped"),
+    syncedAt: timestamp("synced_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("mail_threads_key").on(t.accountId, t.threadId)],
+).enableRLS();
+
+// Meetings from the employees' calendars. Only events with someone besides the owner are kept.
+export const events = pgTable(
+  "events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    accountId: uuid("account_id").notNull().references(() => accounts.id, { onDelete: "cascade" }),
+    externalId: text("external_id").notNull(),
+    title: text("title").notNull(),
+    startAt: timestamp("start_at", { withTimezone: true }).notNull(),
+    endAt: timestamp("end_at", { withTimezone: true }),
+    allDay: boolean("all_day").notNull().default(false),
+    attendees: text("attendees").array().notNull().default([]),
+    location: text("location"),
+    link: text("link"),
+    clientId: uuid("client_id").references(() => clients.id, { onDelete: "set null" }),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("events_key").on(t.accountId, t.externalId), index("events_start").on(t.startAt), index("events_client").on(t.clientId)],
+).enableRLS();

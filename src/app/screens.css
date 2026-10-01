@@ -335,3 +335,25 @@ main:has(.ask.is-started) .ask-hero-copy p { display: none; }
 .found-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; color: var(--ink); text-decoration: none; }
 .found-title:hover b { text-decoration: underline; }
 .found-group .cited { margin-top: 6px; padding-top: 0; border-top: 0; }
+
+/* ---------- Connections ---------- */
+.conn { display: flex; flex-direction: column; gap: 14px; }
+.conn-head { display: flex; align-items: center; gap: 14px; }
+.conn-head h2 { margin: 0; }
+.conn-ics { display: inline-flex; gap: 6px; padding: 8px; border-radius: 16px; background: var(--surface-2); color: var(--accent); }
+.conn-stats { display: flex; flex-wrap: wrap; gap: 18px; color: var(--ink); }
+.conn-stats span { display: inline-flex; align-items: center; gap: 6px; }
+.conn-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.conn-list { margin: 0; padding-inline-start: 20px; display: grid; gap: 6px; color: var(--ink); line-height: 1.6; }
+.alert-inline { color: var(--pink-strong); }
+
+/* My Day meetings */
+.meetings { margin-bottom: 22px; }
+.meetings h2 { display: flex; align-items: center; gap: 8px; }
+.mday + .mday { margin-top: 14px; }
+.mday h3 { margin: 0 0 6px; font-size: 1rem; color: var(--ink-2); }
+.meet { display: grid; grid-template-columns: 70px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 0; border-top: 1.5px solid var(--line); }
+.meet-time { font-weight: 700; color: var(--accent); }
+.meet-body { display: grid; gap: 2px; }
+.grid-2.tight { gap: 18px; }
+.meet-line { display: grid; gap: 2px; margin: 0 0 10px; }

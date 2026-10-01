@@ -1,6 +1,6 @@
 "use client";
 
-import { Books, Buildings, GearSix, SealCheck, Sparkle, SunHorizon, TrayArrowDown } from "@phosphor-icons/react";
+import { Books, Buildings, GearSix, PlugsConnected, SealCheck, Sparkle, SunHorizon, TrayArrowDown } from "@phosphor-icons/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -12,6 +12,7 @@ const items = [
   { href: null, label: "ידע החברה", Icon: Books, phase: 9 },
   { href: "/ingest", label: "קליטת מידע", Icon: TrayArrowDown },
   { href: null, label: "לבדיקה", Icon: SealCheck, phase: 3 },
+  { href: "/connections", label: "חיבורים", Icon: PlugsConnected },
 ] as const;
 
 export function Nav({ isAdmin }: { isAdmin: boolean }) {

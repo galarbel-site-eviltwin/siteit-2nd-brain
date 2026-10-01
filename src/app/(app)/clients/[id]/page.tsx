@@ -9,8 +9,8 @@ import { Dropzone } from "@/components/dropzone";
 import { KindIcon, kindLabel } from "@/components/kind-icon";
 import { SERVICES, STATUS, type Service } from "@/lib/clients";
 import { db } from "@/lib/db";
-import { clientAliases, clients, contacts, employees, items } from "@/lib/db/schema";
-import { ago, fmtDate } from "@/lib/format";
+import { clientAliases, clients, contacts, employees, events, items } from "@/lib/db/schema";
+import { ago, fmtDate, fmtDateTime } from "@/lib/format";
 import { requireEmployee } from "@/lib/session";
 
 const ALIAS_LABEL = { name: "שם", domain: "דומיין", nickname: "כינוי", phone: "טלפון" } as const;
@@ -30,11 +30,18 @@ export default async function ClientSpace({ params, searchParams }: PageProps<"/
   if (!c) notFound();
   const client = c.client;
 
-  const [aliases, people, timeline] = await Promise.all([
+  const [aliases, people, timeline, meetingRows] = await Promise.all([
     db.select().from(clientAliases).where(eq(clientAliases.clientId, id)).orderBy(asc(clientAliases.kind)),
     db.select().from(contacts).where(eq(contacts.clientId, id)).orderBy(asc(contacts.name)),
     db.select().from(items).where(eq(items.clientId, id)).orderBy(desc(sql`coalesce(${items.occurredAt}, ${items.recordedAt})`)).limit(200),
+    db.select().from(events).where(eq(events.clientId, id)).orderBy(desc(events.startAt)).limit(60),
   ]);
+  // The same meeting sits in several people's calendars: show it once.
+  const seen = new Set<string>();
+  const meetings = meetingRows.filter((m) => { const k = `${m.title.trim().toLowerCase()}|${m.startAt.getTime()}`; if (seen.has(k)) return false; seen.add(k); return true; });
+  const now = Date.now();
+  const upcoming = meetings.filter((m) => m.startAt.getTime() >= now).reverse().slice(0, 5);
+  const past = meetings.filter((m) => m.startAt.getTime() < now).slice(0, 5);
   const confirmed = timeline.filter((i) => i.assignment === "confirmed");
   const suggested = timeline.filter((i) => i.assignment === "suggested");
   const error = typeof sp.error === "string" ? errors[sp.error] : null;
@@ -111,6 +118,16 @@ export default async function ClientSpace({ params, searchParams }: PageProps<"/
             </form>
             {client.notes && <><h2 style={{ marginTop: 22 }}>הערות</h2><p style={{ whiteSpace: "pre-wrap" }}>{client.notes}</p></>}
           </section>
+
+          {meetings.length > 0 && (
+            <section className="card span-2">
+              <h2>פגישות</h2>
+              <div className="grid-2 tight">
+                <div><h3 className="muted small">קרובות</h3>{upcoming.length ? upcoming.map((m) => <p key={m.id} className="meet-line"><b>{m.title}</b><span className="sub">{fmtDateTime(m.startAt)}</span></p>) : <p className="muted small">אין פגישות קרובות ביומן.</p>}</div>
+                <div><h3 className="muted small">אחרונות</h3>{past.length ? past.map((m) => <p key={m.id} className="meet-line"><b>{m.title}</b><span className="sub">{fmtDateTime(m.startAt)}</span></p>) : <p className="muted small">אין פגישות בחודשיים האחרונים.</p>}</div>
+              </div>
+            </section>
+          )}
 
           <section className="card span-2">
             <h2>הוספת ידע ללקוח</h2>
