@@ -53,6 +53,17 @@ function Answer({ text, sources, order, onOpen }: { text: string; sources: Map<s
   );
 }
 
+// Pieces of the same chat or meeting shown together, in the order the search ranked them.
+function groupByItem(list: Src[]) {
+  const groups: { itemId: string; title: string; what: string; client: string | null; items: Src[] }[] = [];
+  for (const s of list) {
+    const g = groups.find((x) => x.itemId === s.itemId);
+    if (g) g.items.push(s);
+    else groups.push({ itemId: s.itemId, title: s.title, what: s.what, client: s.client, items: [s] });
+  }
+  return groups;
+}
+
 const TOOL_LABEL: Record<string, string> = { "tool-search_sources": "מחפש במקורות", "tool-client_timeline": "עובר על ציר הזמן של הלקוח", "tool-find_client": "מאתר את הלקוח" };
 
 export function AskChat({ clients, initialClient }: { clients: Option[]; initialClient: string | null }) {
@@ -60,7 +71,7 @@ export function AskChat({ clients, initialClient }: { clients: Option[]; initial
   const [mode, setMode] = useState<"answer" | "sources">("answer");
   const [input, setInput] = useState("");
   const [open, setOpen] = useState<Src | null>(null);
-  const [found, setFound] = useState<{ q: string; sources: (Src & { text: string })[] } | null>(null);
+  const [found, setFound] = useState<{ q: string; client: { id: string; name: string } | null; sources: Src[] } | null>(null);
   const [searching, setSearching] = useState(false);
   const { messages, sendMessage, status, error, setMessages } = useChat({
     transport: new DefaultChatTransport({ api: "/api/ask" }),
@@ -78,7 +89,7 @@ export function AskChat({ clients, initialClient }: { clients: Option[]; initial
       try {
         const r = await fetch(`/api/search?${new URLSearchParams({ q, clientId })}`);
         const j = await r.json();
-        setFound({ q, sources: (j.sources ?? []).map((s: Src & { itemId: string; at: string | null; occurredAt: string | null; clientName: string | null }) => ({ ...s, when: s.at ?? s.occurredAt, client: s.clientName })) });
+        setFound({ q, client: j.client ?? null, sources: (j.sources ?? []).map((s: Src & { itemId: string; at: string | null; occurredAt: string | null; clientName: string | null }) => ({ ...s, when: s.at ?? s.occurredAt, client: s.clientName })) });
       } finally { setSearching(false); }
       return;
     }
@@ -131,19 +142,27 @@ export function AskChat({ clients, initialClient }: { clients: Option[]; initial
           );
         })}
         {status === "submitted" && <div className="bubble brain"><div className="tool-step"><span className="spin" aria-hidden="true" />המוח חושב...</div></div>}
-        {error && <p className="alert" role="alert">המוח לא הצליח לענות כרגע. {/credit card|credits/i.test(error.message) ? "שירות ה-AI עוד לא הופעל בחשבון Vercel." : "אפשר לנסות שוב בעוד רגע."}</p>}
+        {error && <p className="alert" role="alert">{error.message && /[א-ת]/.test(error.message) ? error.message : "המוח לא הצליח לענות כרגע. אפשר לנסות שוב בעוד רגע."}</p>}
 
         {found && (
           <div className="bubble brain">
-            <p className="muted">{found.sources.length ? `${found.sources.length} קטעים שמתאימים ל"${found.q}"` : `לא נמצאו קטעים שמתאימים ל"${found.q}"`}</p>
-            <div className="cited">
-              {found.sources.map((s) => (
-                <button key={s.ref} type="button" className="cite-row tall" onClick={() => setOpen(s)}>
-                  <span><b>{s.title}</b><span className="muted small"> {s.what}{s.when ? `, ${day(s.when)}` : ""}{s.client ? `, ${s.client}` : ""}</span></span>
-                  <span className="snip">{s.text.slice(0, 220)}</span>
-                </button>
-              ))}
-            </div>
+            <p className="muted small found-note">
+              {found.client && <>חיפשתי רק אצל <b>{found.client.name}</b>. </>}
+              {found.sources.length ? `${found.sources.length} קטעים מקוריים, בלי סיכום. לתשובה מסוכמת עוברים ל"תשובה מהמוח".` : `לא נמצאו קטעים שמתאימים ל"${found.q}".`}
+            </p>
+            {groupByItem(found.sources).map((g) => (
+              <div key={g.itemId} className="found-group">
+                <Link href={`/items/${g.itemId}`} className="found-title"><b>{g.title}</b><span className="muted small">{g.what}{g.client && !found.client ? `, ${g.client}` : ""}</span></Link>
+                <div className="cited">
+                  {g.items.map((s) => (
+                    <button key={s.ref} type="button" className="cite-row tall" onClick={() => setOpen(s)}>
+                      {s.when && <span className="muted small">{day(s.when)}</span>}
+                      <span className="snip">{s.text.slice(0, 240)}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>

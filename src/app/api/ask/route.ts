@@ -93,5 +93,15 @@ export async function POST(req: Request) {
     },
   });
 
-  return createUIMessageStreamResponse({ stream: toUIMessageStream({ stream: result.stream }) });
+  return createUIMessageStreamResponse({ stream: toUIMessageStream({ stream: result.stream, onError: explain }) });
+}
+
+// What the person sees when the AI call fails: the real reason in plain words, never a stack trace.
+function explain(e: unknown) {
+  const msg = e instanceof Error ? e.message : String(e);
+  console.error("ask failed", msg);
+  if (/api key|authentication|x-api-key|401/i.test(msg)) return "המפתח של Claude נדחה ע\"י Anthropic (API key is invalid). צריך מפתח תקין.";
+  if (/credit|balance|billing|402/i.test(msg)) return "בחשבון Anthropic אין מספיק יתרה.";
+  if (/rate|429|overloaded|529/i.test(msg)) return "Claude עמוס כרגע. אפשר לנסות שוב בעוד דקה.";
+  return "המוח לא הצליח לענות כרגע. אפשר לנסות שוב בעוד רגע.";
 }

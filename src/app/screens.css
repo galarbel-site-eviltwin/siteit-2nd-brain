@@ -330,3 +330,8 @@ main:has(.ask.is-started) .ask-hero-copy p { display: none; }
 .bulk-pick { display: grid; place-items: center; width: 28px; height: 44px; padding: 0; background: none; box-shadow: none; border-radius: 0; cursor: pointer; }
 .bulk-pick input { width: 20px; height: 20px; accent-color: var(--plum); cursor: pointer; }
 .rows.picks .bulk-pick { height: 34px; }
+.found-note { margin: 0 0 12px; }
+.found-group + .found-group { margin-top: 16px; }
+.found-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; color: var(--ink); text-decoration: none; }
+.found-title:hover b { text-decoration: underline; }
+.found-group .cited { margin-top: 6px; padding-top: 0; border-top: 0; }

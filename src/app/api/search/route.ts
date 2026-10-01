@@ -1,4 +1,4 @@
-import { searchSources } from "@/lib/ai/search";
+import { findForPerson } from "@/lib/ai/search";
 import { describe } from "@/lib/item-label";
 import { getEmployee } from "@/lib/session";
 
@@ -8,7 +8,7 @@ export async function GET(req: Request) {
   if (!me) return Response.json({ error: "צריך להתחבר מחדש" }, { status: 401 });
   const u = new URL(req.url);
   const q = (u.searchParams.get("q") ?? "").trim();
-  if (!q) return Response.json({ sources: [] });
-  const sources = await searchSources(q, { clientId: u.searchParams.get("clientId") || null }, 20);
-  return Response.json({ sources: sources.map((s) => ({ ...s, what: describe(s.kind as never, s.source as never).label })) });
+  if (!q) return Response.json({ sources: [], client: null });
+  const { sources, client } = await findForPerson(q, u.searchParams.get("clientId") || null);
+  return Response.json({ client, sources: sources.map((s) => ({ ...s, what: describe(s.kind as never, s.source as never).label })) });
 }
