@@ -27,10 +27,11 @@
 | אחסון | Vercel + Supabase, כמו ב-ai-cms. ייתכן מעבר ל-Firebase בהמשך |
 | ריפו | `galarbel-site-eviltwin/siteit-2nd-brain` (חשבון העבודה). קוד מקומי ב-`C:\dev\siteit-2nd-brain` |
 | התחברות | Google בלבד. **לגל אין גישת אדמין ל-Workspace (כנראה רק לדני)**, ולכן בינתיים: אפליקציית OAuth חיצונית, וכל עובד נכנס עם חשבון ה-Google שלו. הגישה נקבעת לפי רשימת מיילים מאושרים ב-`employees`, לא לפי דומיין. Microsoft 365 מתחבר כמקור מידע ולא כהתחברות |
-| Gmail (שלב 5) | דורש אפליקציה פנימית של ה-Workspace. פעולה חד-פעמית של דני, או מינוי גל לאדמין. לא חוסם עד שלב 5 |
+| Gmail (שלב 5) | **כבר לא תלוי בדני:** אפליקציית ה-OAuth הוקמה כ-Internal בתוך הארגון eviltwin.io, ולכן הרשאות Gmail ויומן לא ידרשו אימות של Google. יידרש רק להוסיף את ההרשאות בשלב 5 |
 | Supabase | פרויקט `eybdaafijertxizdwank` נוצר ב-30.9.2026. האזור צריך להיות `eu-central-1`, טרם אומת |
 | עובדים מאושרים | `galarbel@eviltwin.io`, `dani@eviltwin.io` (admin), `maya@eviltwin.io`, `itay@eviltwin.io`, `ben@eviltwin.io`. כולם `member` חוץ מדני. הרשימה נטענת ל-`employees` בשלב 0 |
 | כתובת | https://siteit-2nd-brain.vercel.app, פרויקט Vercel `siteit-eviltwin/siteit-2nd-brain`, פריסה מה-CLI. כתובת ה-callback ל-Google Cloud: `https://siteit-2nd-brain.vercel.app/api/auth/callback/google` (ולפיתוח: `http://localhost:3200/api/auth/callback/google`) |
+| Google OAuth | הוקם ב-1.10.2026 ע"י גל: פרויקט Google Cloud `swift-clarity-510213-q8` בארגון eviltwin.io, קהל **Internal** (רק משתמשי `@eviltwin.io`), לקוח Web בשם SiteIt 2nd Brain עם הכתובות של Vercel ו-localhost:3200. הגישה עדיין נקבעת לפי רשימת העובדים, Internal הוא שכבת הגנה נוספת |
 | כניסה זמנית | עד שיהיה Google Cloud: כניסה בלי סיסמה לפי רשימת העובדים, שעובדת רק ב-`npm run dev` מקומי (`AUTH_DEV_LOGIN=1`). חסומה בקוד בכל build של production ובכל הרצה על Vercel |
 | דומיין | `eviltwin.io` יושב על Google Workspace (לפי רשומות ה-MX, נבדק 30.9.2026), ולכן כל החמישה מתחברים ב-Google ישירות. סיכון אחד: אם דני חסם ב-Workspace אפליקציות צד שלישי לא מאושרות, ההתחברות תיחסם עד שיאשר את האפליקציה. נגלה בשלב 0 |
 | היקף | פחות מ-60 לקוחות (קידום ובניית אתרים יחד). פגישות מוקלטות לא קבועות: טעינה ראשונית של מנה ואז עדכון שוטף |
