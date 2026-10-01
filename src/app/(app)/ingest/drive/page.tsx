@@ -260,7 +260,7 @@ export default async function DrivePage({ searchParams }: PageProps<"/ingest/dri
                         <form action={mapFolderAction} className="ftile-link">
                           <input type="hidden" name="folderId" value={f.folderId} />
                           <AutoSubmitSelect name="clientId" defaultValue="" aria-label={`קישור ${f.name} ללקוח קיים`}>
-                            <option value="" disabled>קישור ללקוח קיים</option>
+                            <option value="" disabled>לקוח קיים</option>
                             {options.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
                           </AutoSubmitSelect>
                         </form>
