@@ -107,6 +107,7 @@ export async function POST(req: Request) {
 function explain(e: unknown) {
   const msg = e instanceof Error ? e.message : String(e);
   console.error("ask failed", msg);
+  if (/workspace/i.test(msg)) return "למפתח של Claude חסר מזהה ה-workspace (ANTHROPIC_WORKSPACE_ID).";
   if (/api key|authentication|x-api-key|401/i.test(msg)) return "המפתח של Claude נדחה ע\"י Anthropic (API key is invalid). צריך מפתח תקין.";
   if (/credit|balance|billing|402/i.test(msg)) return "בחשבון Anthropic אין מספיק יתרה.";
   if (/rate|429|overloaded|529/i.test(msg)) return "Claude עמוס כרגע. אפשר לנסות שוב בעוד דקה.";
