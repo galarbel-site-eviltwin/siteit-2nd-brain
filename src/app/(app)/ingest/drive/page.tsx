@@ -1,10 +1,11 @@
-import { ArrowRight, ArrowsClockwise, CheckCircle, Folder, FolderSimpleDashed, LinkBreak, Plus, Trash, WarningCircle } from "@phosphor-icons/react/dist/ssr";
+import { ArrowRight, ArrowsClockwise, CaretLeft, CheckCircle, Folder, FolderSimpleDashed, LinkBreak, MapPin, Plus, Trash, WarningCircle } from "@phosphor-icons/react/dist/ssr";
 import { count, eq } from "drizzle-orm";
 import Link from "next/link";
 import {
   addRootAction, addRootByLinkAction, bulkFoldersAction, disconnectDriveAction, ignoreFolderAction, mapFolderAction,
   newClientFromFolderAction, removeRootAction, resetFolderAction, setRootServiceAction, syncNowAction,
 } from "./actions";
+import { AutoSubmitSelect } from "@/components/auto-submit-select";
 import { SelectAll } from "@/components/select-all";
 import { clientOptions } from "@/lib/clients";
 import { db } from "@/lib/db";
@@ -45,13 +46,13 @@ export default async function DrivePage({ searchParams }: PageProps<"/ingest/dri
   const inside = typeof sp.in === "string" ? sp.in : null;
   let drives: { id: string; name: string }[] = [];
   let folders: { id: string; name: string }[] = [];
-  let place: { label: string; driveId?: string; parentId?: string; up?: string } | null = null;
+  let place: { label: string; driveId?: string; parentId?: string; up?: string; crumbs: { label: string; href: string }[] } | null = null;
   let apiError: string | null = null;
   if (picking && svc) {
     try {
       const token = await accessToken();
       drives = await listSharedDrives(token);
-      if (where === "shared" && !inside) { place = { label: "משותף איתי", up: q("") }; folders = await listSharedWithMeFolders(token); }
+      if (where === "shared" && !inside) { place = { label: "משותף איתי", up: q(""), crumbs: [{ label: "משותף איתי", href: q("&drive=shared") }] }; folders = await listSharedWithMeFolders(token); }
       else if (where) {
         const driveId = where === "my" || where === "shared" ? undefined : where;
         const parentId = inside ?? (where === "my" ? "root" : where);
@@ -61,7 +62,19 @@ export default async function DrivePage({ searchParams }: PageProps<"/ingest/dri
         const parent = here?.parents?.[0];
         const atTop = !parent || parent === driveId || (where === "my" && !(await getFolder(token, parent).then((p) => p.parents?.length).catch(() => 0)));
         const up = here ? (atTop || where === "shared" ? q(where === "shared" ? "&drive=shared" : `&drive=${where}`) : q(`&drive=${where}&in=${parent}`)) : q("");
-        place = { label, driveId, parentId, up };
+        // The path from the top of this Drive down to here, for the "you are here" bar.
+        const base = where === "my" ? "האחסון שלי" : where === "shared" ? "משותף איתי" : drives.find((d) => d.id === where)?.name ?? "Drive";
+        const chain: { id: string; name: string }[] = [];
+        let cur: string | undefined = inside ?? undefined;
+        for (let i = 0; cur && i < 8; i++) {
+          if (cur === driveId) break;
+          const node = i === 0 && here ? here : await getFolder(token, cur).catch(() => null);
+          if (!node || (where === "my" && !node.parents?.length)) break; // My Drive itself has no parent
+          chain.unshift({ id: node.id, name: node.name });
+          cur = node.parents?.[0];
+        }
+        const crumbs = [{ label: base, href: q(`&drive=${where}`) }, ...chain.map((c) => ({ label: c.name, href: q(`&drive=${where}&in=${c.id}`) }))];
+        place = { label, driveId, parentId, up, crumbs };
         folders = await listChildren(token, parentId, driveId, true);
       }
     } catch (e) {
@@ -106,7 +119,7 @@ export default async function DrivePage({ searchParams }: PageProps<"/ingest/dri
       ) : picking ? (
         <section className="card">
           <div className="card-head">
-            <h2>{roots.length ? "הוספת תיקייה ראשית" : "איפה נמצאות תיקיות הלקוחות?"}</h2>
+            <h2>{roots.length ? "חיבור תיקייה ראשית נוספת" : "איפה נמצאות תיקיות הלקוחות?"}</h2>
             {roots.length > 0 && <Link href="/ingest/drive" className="btn btn-sm btn-ghost">ביטול</Link>}
           </div>
 
@@ -139,7 +152,16 @@ export default async function DrivePage({ searchParams }: PageProps<"/ingest/dri
                 </>
               ) : (
                 <>
-                  <p className="muted small" style={{ marginBottom: 10 }}><b>{place.label}</b>: לחץ על תיקייה כדי להיכנס אליה, או &quot;בחירה&quot; אם בתוכה יושבות תיקיות הלקוחות.</p>
+                  <nav className="location" aria-label="המיקום שלך ב-Drive">
+                    <MapPin size={20} weight="fill" /><span className="here">אתה כאן:</span>
+                    {place.crumbs.map((c, i) => (
+                      <span key={c.href} className="crumb">
+                        {i > 0 && <CaretLeft size={14} />}
+                        {i === place!.crumbs.length - 1 ? <b aria-current="location">{c.label}</b> : <Link href={c.href}>{c.label}</Link>}
+                      </span>
+                    ))}
+                  </nav>
+                  <p className="muted small" style={{ marginBottom: 10 }}>לחץ על תיקייה כדי להיכנס אליה, או &quot;בחירה&quot; אם בתוכה יושבות תיקיות הלקוחות.</p>
                   <div className="pick-list">
                     {place.parentId && place.parentId !== "root" && (
                       <form action={addRootAction}>
@@ -183,25 +205,29 @@ export default async function DrivePage({ searchParams }: PageProps<"/ingest/dri
             </div>
 
             <h3 className="sub-title">תיקיות ראשיות</h3>
-            <div className="rows">
+            <p className="muted small">תיקייה ראשית היא התיקייה שבתוכה יושבות תיקיות הלקוחות. אפשר לחבר כמה, למשל אחת ללקוחות קידום ואחת ללקוחות בניית אתרים.</p>
+            <div className="rows root-rows">
               {roots.map((r) => (
                 <div key={r.id}>
                   <span className="sq sm plate"><DriveIcon size={20} /></span>
                   <span><b>{r.name}</b><span className="sub">{mapping.filter((m) => m.f.rootId === r.id).length} תיקיות לקוח</span></span>
                   <span className="root-actions">
-                    <form action={setRootServiceAction} className="assign-form">
+                    <form action={setRootServiceAction} className="root-type">
                       <input type="hidden" name="rootId" value={r.id} />
-                      <select name="svc" defaultValue={svcKey(r.services)} aria-label={`השירות של ${r.name}`}>
+                      <label htmlFor={`svc-${r.id}`}>סוג הלקוחות</label>
+                      <AutoSubmitSelect id={`svc-${r.id}`} name="svc" defaultValue={svcKey(r.services)}>
                         {Object.entries(SERVICE_SETS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
-                      </select>
-                      <button className="btn btn-sm btn-ghost">שמירה</button>
+                      </AutoSubmitSelect>
                     </form>
-                    <form action={removeRootAction}><input type="hidden" name="rootId" value={r.id} /><button className="icon-btn" aria-label={`הסרת ${r.name}`}><Trash size={18} /></button></form>
+                    <form action={removeRootAction}>
+                      <input type="hidden" name="rootId" value={r.id} />
+                      <button className="btn btn-sm btn-danger" title="המוח יפסיק לעקוב אחרי התיקייה. לקוחות ומה שכבר נקלט נשארים"><Trash size={18} />הסרת התיקייה</button>
+                    </form>
                   </span>
                 </div>
               ))}
             </div>
-            <Link href="/ingest/drive?add=1" className="btn btn-sm btn-ghost" style={{ marginTop: 12 }}><Plus size={18} />הוספת תיקייה ראשית</Link>
+            <Link href="/ingest/drive?add=1" className="btn btn-sm btn-ghost" style={{ marginTop: 12 }}><Plus size={18} />חיבור תיקייה ראשית נוספת</Link>
           </section>
 
           {pending.length > 0 && (
