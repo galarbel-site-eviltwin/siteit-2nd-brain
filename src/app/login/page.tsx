@@ -46,7 +46,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
       <section className="login-copy">
         <Image className="logo logo-light" src="/brand/logo.png" priority sizes="320px" alt="SiteIt 2nd Brain" width={1759} height={894} />
         <Image className="logo logo-dark" src="/brand/logo-dark.png" sizes="320px" alt="SiteIt 2nd Brain" width={1759} height={894} />
-        <h1>כל מה שסייט איט יודעת. בשאלה אחת.</h1>
+        <h1><span className="nw">פחות לחפש.</span> <span className="nw">יותר לקדם.</span><span className="h1-second">המידע על הלקוחות והפרויקטים, במקום אחד.</span></h1>
         <p className="lead">פגישות, הודעות, הצעות מחיר והחלטות של כל הלקוחות, עם מקור שאפשר לבדוק לכל תשובה.</p>
 
         {message && (

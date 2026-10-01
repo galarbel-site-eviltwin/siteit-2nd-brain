@@ -141,3 +141,6 @@ body { font-family: var(--font-rubik), system-ui, sans-serif; font-size: 17px; l
 .ask-box input:disabled { color: var(--ink-3); }
 .ask-box button { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: color-mix(in srgb, var(--accent) 12%, var(--surface)); color: var(--accent); opacity: 0.6; }
 @media (max-width: 900px) { .ask-hero-copy { padding: 20px; } .ask-box input { font-size: 16px; } }
+.login h1 .h1-second { display: block; margin-top: 10px; font-size: 0.5em; line-height: 1.35; font-weight: 600; letter-spacing: -0.01em; color: var(--ink-2); max-width: 30ch; }
+.login h1 .nw { white-space: nowrap; }
+.login h1, .login h1 .h1-second { text-wrap: balance; }
