@@ -3,6 +3,7 @@ import { ShieldCheck, WarningCircle } from "@phosphor-icons/react/dist/ssr";
 import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
 import { auth, devLoginEnabled, googleConfigured, signIn } from "@/auth";
+import { BrainAnim } from "@/components/brain/brain-anim";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 const errors: Record<string, string> = {
@@ -82,8 +83,8 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
           <ShieldCheck size={20} /> הכניסה לעובדי סייט איט בלבד
         </p>
       </section>
-      <div className="login-art" aria-hidden="true">
-        <Image src="/brand/mark.png" sizes="220px" alt="" width={724} height={874} />
+      <div className="login-art">
+        <BrainAnim label="מוח שקולט מידע מכל המקורות" />
       </div>
     </main>
   );

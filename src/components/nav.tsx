@@ -8,7 +8,7 @@ import { usePathname } from "next/navigation";
 const items = [
   { href: "/", label: "היום שלי", Icon: SunHorizon },
   { href: null, label: "לקוחות", Icon: Buildings, phase: 1 },
-  { href: null, label: "שאל את המוח", Icon: Sparkle, phase: 2 },
+  { href: "/ask", label: "שאל את המוח", Icon: Sparkle },
   { href: null, label: "ידע החברה", Icon: Books, phase: 9 },
   { href: null, label: "קליטת מידע", Icon: TrayArrowDown, phase: 1 },
   { href: null, label: "לבדיקה", Icon: SealCheck, phase: 3 },

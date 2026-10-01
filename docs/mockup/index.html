@@ -455,6 +455,13 @@ img{display:block;max-width:100%}
 .kowner{display:flex;align-items:center;gap:10px;font-size:15px;color:var(--ink-2)}
 
 
+/* ============ Animated brain (assets/brain-engine.js) ============ */
+.brain-stage{position:absolute;inset:0}
+.brain-hero{position:relative;overflow:hidden;height:clamp(240px,26vw,320px);border-radius:28px;margin-bottom:26px;background-color:#150A28;background-image:radial-gradient(circle,#2c1f4a 1.2px,transparent 1.4px),radial-gradient(110% 120% at 50% 40%,#2b1752 0%,#150A28 70%);background-size:24px 24px,auto}
+.brain-hero-copy{position:absolute;inset-inline:0;bottom:0;padding:50px 28px 22px;background:linear-gradient(to top,rgb(21 10 40 / .9),transparent);color:#fff}
+.brain-hero-copy h1{font-size:clamp(28px,2.8vw,40px);font-weight:800;letter-spacing:-.025em;line-height:1.1}
+.brain-hero-copy p{font-size:17px;color:#e3dbf3;margin-top:4px}
+
 /* ============ Nav extras ============ */
 .nav-sep{height:1px;background:var(--line);margin:10px 16px}
 .side{overflow-y:auto;scrollbar-width:none}
@@ -626,8 +633,7 @@ img{display:block;max-width:100%}
   </div>
   <div class="login-art" aria-hidden="true">
     <div class="dots" id="dots" data-dt-spacing="26" data-dt-glow-radius="260"></div>
-    <svg class="art-lines" id="artLines"></svg>
-    <img class="art-core" id="artCore" src="assets/mark.png" alt="">
+    <div class="brain-stage" data-brain></div>
     <div class="float f1" data-src="wa" data-line="var(--green)"><div class="sq"><i class="ph-fill ph-whatsapp-logo"></i></div><div><b>נגה, סטודיו נגה</b><span>אפשר לקבל הצעה מצומצמת רק לשלב א'?</span></div></div>
     <div class="float f2" data-src="meet" data-line="var(--cyan)"><div class="sq"><i class="ph-fill ph-microphone"></i></div><div><b>פגישה, 8 בספטמבר</b><span>"הכיוון מתאים לי, אבל זה יותר ממה שתכננתי"</span></div></div>
     <div class="float f3" data-src="doc" data-line="var(--yellow)"><div class="sq"><i class="ph-fill ph-file-text"></i></div><div><b>הצעת מחיר, גרסה 3</b><span>שלב א', 12,900 ש"ח. ממתינה לתשובה</span></div></div>
@@ -753,6 +759,7 @@ img{display:block;max-width:100%}
 
     <!-- ============ ASK ============ -->
     <section class="screen ask-layout" data-view="ask" hidden aria-label="שאל את המוח">
+      <div class="brain-hero rv"><div class="brain-stage" data-brain></div><div class="brain-hero-copy"><h1>שאל את המוח</h1><p>כל שאלה על לקוח, פגישה או החלטה, עם מקור לכל תשובה.</p></div></div>
       <div class="scope rv">
         <span class="lbl">מחפש בתוך</span>
         <button class="scope-pill"><span class="mono" style="--m:#0878AA">נ</span>סטודיו נגה עיצוב פנים<i class="ph ph-caret-down"></i></button>
@@ -1212,13 +1219,12 @@ function startLogin() {
   if (loginStarted) return; loginStarted = true;
   initDots($('#dots'));
   if (hasG && !reduce) {
-    gsap.fromTo('#artCore', { opacity: 0, scale: .9 }, { opacity: 1, scale: 1, duration: 1, ease: 'expo.out', delay: .15 });
     gsap.fromTo('.float', { opacity: 0, y: 20, scale: .95 }, { opacity: 1, y: 0, scale: 1, duration: .8, ease: 'expo.out', stagger: .12, delay: .45 });
   }
 }
 function drawLines() {
   const art = $('.login-art'), svg = $('#artLines'), core = $('#artCore');
-  if (!art || art.offsetParent === null) return;
+  if (!art || !svg || !core || art.offsetParent === null) return;
   const A = art.getBoundingClientRect(), C = core.getBoundingClientRect();
   const cx = C.left + C.width / 2 - A.left, cy = C.top + C.height / 2 - A.top;
   svg.setAttribute('viewBox', `0 0 ${A.width} ${A.height}`);
@@ -1582,6 +1588,10 @@ document.addEventListener('keydown', (e) => { if ((e.key === 'Enter' || e.key ==
 /* ---------- boot ---------- */
 render(views.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'login');
 })();
+</script>
+<script type="module">
+import { mountBrain } from "./assets/brain-engine.js";
+document.querySelectorAll("[data-brain]").forEach((el) => mountBrain(el, { src: "assets/brain.webp", brightSrc: "assets/brain-bright.webp" }));
 </script>
 </body>
 </html>

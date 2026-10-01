@@ -63,7 +63,7 @@ body { font-family: var(--font-rubik), system-ui, sans-serif; font-size: 17px; l
 .login-copy .logo { width: min(320px, 70%); height: auto; }
 .login h1 { font-size: clamp(36px, 4vw, 56px); line-height: 1.12; font-weight: 800; letter-spacing: -0.025em; max-width: 20ch; }
 .login .lead { font-size: clamp(18px, 1.6vw, 21px); color: var(--ink-2); max-width: 36ch; }
-.login-art { position: relative; margin: 14px; border-radius: 40px; overflow: hidden; display: grid; place-items: center; background-color: var(--plum-900); background-image: radial-gradient(circle, #3a2a5e 1.3px, transparent 1.5px), radial-gradient(120% 90% at 30% 20%, #3b2268 0%, var(--plum-900) 55%, var(--plum-950) 100%); background-size: 26px 26px, auto; }
+.login-art { position: sticky; top: 14px; align-self: start; height: calc(100dvh - 28px); margin: 14px; border-radius: 40px; overflow: hidden; display: grid; place-items: center; background-color: var(--plum-900); background-image: radial-gradient(circle, #3a2a5e 1.3px, transparent 1.5px), radial-gradient(120% 90% at 30% 20%, #3b2268 0%, var(--plum-900) 55%, var(--plum-950) 100%); background-size: 26px 26px, auto; }
 .login-art img { width: min(220px, 34%); height: auto; filter: drop-shadow(0 30px 60px rgb(0 0 0 / 0.45)); }
 .gbtn { height: 62px; padding: 0 30px; font-size: 19px; gap: 14px; background: var(--surface); color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--line-2), var(--shadow); align-self: flex-start; }
 .alert { display: flex; gap: 12px; align-items: flex-start; padding: 14px 18px; border-radius: 18px; background: color-mix(in srgb, var(--pink) 12%, var(--surface)); font-size: 16px; max-width: 520px; }
@@ -108,7 +108,7 @@ body { font-family: var(--font-rubik), system-ui, sans-serif; font-size: 17px; l
 
 @media (max-width: 900px) {
   .login { grid-template-columns: 1fr; }
-  .login-art { order: -1; min-height: 32vh; margin: 10px; border-radius: 32px; }
+  .login-art { order: -1; position: relative; top: 0; height: 34vh; min-height: 240px; margin: 10px; border-radius: 32px; }
   .login-copy { padding: 28px 20px 40px; gap: 22px; }
   .gbtn { align-self: stretch; }
   .app { grid-template-columns: 1fr; }
@@ -124,3 +124,20 @@ body { font-family: var(--font-rubik), system-ui, sans-serif; font-size: 17px; l
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
 }
+
+/* animated brain (src/components/brain). Always on a dark stage: its light is drawn in screen blend. */
+.brain { position: relative; width: 100%; height: 100%; }
+.login-art .brain { position: absolute; inset: 0; }
+.brain-hero { position: relative; overflow: hidden; border-radius: 28px; background-color: var(--plum-950); background-image: radial-gradient(circle, #2c1f4a 1.2px, transparent 1.4px), radial-gradient(110% 120% at 50% 40%, #2b1752 0%, var(--plum-950) 70%); background-size: 24px 24px, auto; color: #fff; }
+.ask-hero { height: clamp(300px, 42vw, 460px); }
+.ask-hero .brain { position: absolute; inset: 0; }
+.ask-hero-copy { position: absolute; inset-inline: 0; bottom: 0; padding: 60px 32px 28px; background: linear-gradient(to top, rgb(21 10 40 / 0.9), transparent); }
+.ask-hero-copy > * { max-width: 560px; }
+.ask-hero-copy h1 { font-size: clamp(30px, 3.2vw, 44px); font-weight: 800; letter-spacing: -0.025em; line-height: 1.1; }
+.ask-hero-copy p { font-size: 18px; color: #e3dbf3; margin-top: 6px; }
+.ask-box { display: flex; align-items: center; gap: 12px; margin-top: 22px; padding: 10px 10px 10px 10px; padding-inline-start: 22px; border-radius: 26px; background: var(--surface); box-shadow: var(--shadow-lg); }
+.ask-box > svg { color: var(--accent); flex: none; }
+.ask-box input { flex: 1; min-width: 0; height: 60px; border: 0; outline: 0; background: transparent; font-size: 18px; }
+.ask-box input:disabled { color: var(--ink-3); }
+.ask-box button { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: color-mix(in srgb, var(--accent) 12%, var(--surface)); color: var(--accent); opacity: 0.6; }
+@media (max-width: 900px) { .ask-hero-copy { padding: 20px; } .ask-box input { font-size: 16px; } }
