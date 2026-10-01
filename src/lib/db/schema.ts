@@ -71,7 +71,7 @@ export const contacts = pgTable(
 // ---------- ingested knowledge ----------
 
 export const itemKind = pgEnum("item_kind", ["meeting", "chat", "document", "voice_note", "note"]);
-export const itemSource = pgEnum("item_source", ["timeless", "whatsapp", "upload", "manual"]);
+export const itemSource = pgEnum("item_source", ["timeless", "whatsapp", "upload", "manual", "drive"]);
 export const assignmentStatus = pgEnum("assignment_status", ["none", "suggested", "confirmed"]);
 // stored = kept, but its content cannot be read yet (audio, images): honest about what was ingested.
 export const ingestStatus = pgEnum("ingest_status", ["processing", "ready", "stored", "failed"]);
@@ -115,6 +115,52 @@ export const chunks = pgTable(
     at: timestamp("at", { withTimezone: true }),
   },
   (t) => [index("chunks_item").on(t.itemId, t.seq)],
+).enableRLS();
+
+// ---------- connected sources ----------
+
+// One row per connected source. Tokens are encrypted in the app (lib/crypto) before they reach the database.
+export const connections = pgTable("connections", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  provider: text("provider").notNull().unique(), // "google_drive"
+  ownerId: uuid("owner_id").references(() => employees.id, { onDelete: "set null" }),
+  accountEmail: text("account_email"),
+  tokenEnc: text("token_enc"),
+  config: jsonb("config"), // drive: { driveId, rootFolderId, rootName }
+  lastSyncAt: timestamp("last_sync_at", { withTimezone: true }),
+  lastSuccessAt: timestamp("last_success_at", { withTimezone: true }),
+  lastError: text("last_error"),
+  lastResult: jsonb("last_result"),
+  // Lease that keeps two syncs (cron and "sync now") from running at once.
+  lockedUntil: timestamp("locked_until", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}).enableRLS();
+
+export const folderStatus = pgEnum("folder_status", ["pending", "mapped", "ignored"]);
+
+// A client folder in the shared Drive. New folders wait for a person to say which client they are.
+export const driveFolders = pgTable("drive_folders", {
+  folderId: text("folder_id").primaryKey(),
+  name: text("name").notNull(),
+  status: folderStatus("status").notNull().default("pending"),
+  clientId: uuid("client_id").references(() => clients.id, { onDelete: "set null" }),
+  suggestedClientId: uuid("suggested_client_id").references(() => clients.id, { onDelete: "set null" }),
+  seenAt: timestamp("seen_at", { withTimezone: true }).notNull().defaultNow(),
+}).enableRLS();
+
+// Every Drive file the sync has handled, so an edited file replaces its item instead of duplicating it.
+export const driveFiles = pgTable(
+  "drive_files",
+  {
+    fileId: text("file_id").primaryKey(),
+    folderId: text("folder_id").notNull(),
+    itemId: uuid("item_id").references(() => items.id, { onDelete: "set null" }),
+    name: text("name").notNull(),
+    version: text("version"),
+    syncedAt: timestamp("synced_at", { withTimezone: true }).notNull().defaultNow(),
+    skipped: text("skipped"),
+  },
+  (t) => [index("drive_files_folder").on(t.folderId)],
 ).enableRLS();
 
 export type Employee = typeof employees.$inferSelect;

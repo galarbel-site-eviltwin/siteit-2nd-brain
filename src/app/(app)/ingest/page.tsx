@@ -1,15 +1,24 @@
-import { ChatsCircle, FileText, Microphone, Waveform } from "@phosphor-icons/react/dist/ssr";
+import { GoogleDriveLogo } from "@phosphor-icons/react/dist/ssr";
+import { count, eq } from "drizzle-orm";
+import Image from "next/image";
 import Link from "next/link";
 import { AssignForm } from "@/components/assign-form";
 import { Dropzone } from "@/components/dropzone";
 import { KindIcon } from "@/components/kind-icon";
 import { clientOptions, recentItems } from "@/lib/clients";
+import { db } from "@/lib/db";
+import { driveFolders } from "@/lib/db/schema";
+import { getConnection, type DriveConfig } from "@/lib/drive/google";
 import { ago, fmtDate } from "@/lib/format";
 import { requireEmployee } from "@/lib/session";
 
 export default async function Ingest() {
   await requireEmployee();
-  const [rows, options] = await Promise.all([recentItems(60), clientOptions()]);
+  const [rows, options, conn, [{ n: newFolders }]] = await Promise.all([
+    recentItems(60), clientOptions(), getConnection(),
+    db.select({ n: count() }).from(driveFolders).where(eq(driveFolders.status, "pending")),
+  ]);
+  const root = (conn?.config as DriveConfig | null)?.rootName;
   const waiting = rows.filter((r) => r.assignment !== "confirmed" && r.status !== "processing" && r.status !== "failed");
   const done = rows.filter((r) => !waiting.includes(r));
 
@@ -19,21 +28,30 @@ export default async function Ingest() {
 
       <Dropzone />
 
+      <Link href="/ingest/drive" className="card drive-card">
+        <span className="sq lg" data-src="media"><GoogleDriveLogo weight="fill" size={30} /></span>
+        <div>
+          <b>{root ? `Google Drive: ${root}` : "חיבור Google Drive"}</b>
+          <span className="muted small">{root ? (newFolders ? `${newFolders} תיקיות חדשות מחכות לקישור ללקוח` : "קבצים מתיקיות הלקוחות נקלטים לבד") : "המוח יקלוט לבד קבצים מתיקיות הלקוחות ב-Drive המשותף"}</span>
+        </div>
+        <span className="btn btn-sm btn-ghost">{root ? "הגדרות" : "חיבור"}</span>
+      </Link>
+
       <div className="how">
         <article className="card" data-src="wa">
-          <span className="sq md" data-src="wa"><ChatsCircle weight="fill" size={22} /></span><h2>שיחת וואטסאפ</h2>
+          <Image className="how-ic" src="/brand/icons/whatsapp.webp" alt="" width={56} height={56} /><h2>שיחת וואטסאפ</h2>
           <ol><li>פותחים את השיחה עם הלקוח</li><li>{"לוחצים על שם השיחה ואז \"ייצוא צ'אט\""}</li><li>{"\"ללא מדיה\" מספיק. גוררים לכאן את הקובץ"}</li></ol>
         </article>
         <article className="card" data-src="meet">
-          <span className="sq md" data-src="meet"><Microphone weight="fill" size={22} /></span><h2>פגישה מ-Timeless</h2>
+          <Image className="how-ic" src="/brand/icons/timeless.webp" alt="" width={56} height={56} /><h2>פגישה מ-Timeless</h2>
           <ol><li>פותחים את הפגישה ב-Timeless</li><li>מורידים את התמלול (TXT, DOCX או PDF)</li><li>גוררים לכאן. הדוברים והזמנים נשמרים</li></ol>
         </article>
         <article className="card" data-src="doc">
-          <span className="sq md" data-src="doc"><FileText weight="fill" size={22} /></span><h2>מסמך או הצעה</h2>
+          <Image className="how-ic" src="/brand/icons/document.webp" alt="" width={56} height={56} /><h2>מסמך או הצעה</h2>
           <ol><li>הצעות מחיר, בריפים ודוחות</li><li>PDF, DOCX או טקסט</li><li>אותו קובץ פעמיים לא ייקלט פעמיים</li></ol>
         </article>
-        <article className="card" data-src="dec">
-          <span className="sq md" data-src="dec"><Waveform weight="fill" size={22} /></span><h2>הקלטות ותמונות</h2>
+        <article className="card" data-src="media">
+          <Image className="how-ic" src="/brand/icons/recordings-images.webp" alt="" width={56} height={56} /><h2>הקלטות ותמונות</h2>
           <ol><li>נשמרות כבר עכשיו</li><li>התמלול וקריאת הטקסט מתמונות יגיעו בהמשך</li></ol>
         </article>
       </div>

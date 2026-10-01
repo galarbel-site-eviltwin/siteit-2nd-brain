@@ -1,11 +1,11 @@
 import { ChatsCircle, FileText, Microphone, NotePencil, Waveform } from "@phosphor-icons/react/dist/ssr";
 
-// Source colors carry meaning across the product: green chats, cyan meetings, yellow documents, pink voice.
+// Source colors carry meaning across the product: green chats, red meetings (Timeless), yellow documents, cyan recordings.
 const MAP = {
   chat: { Icon: ChatsCircle, src: "wa", label: "שיחת וואטסאפ" },
   meeting: { Icon: Microphone, src: "meet", label: "פגישה" },
   document: { Icon: FileText, src: "doc", label: "מסמך" },
-  voice_note: { Icon: Waveform, src: "dec", label: "הקלטה" },
+  voice_note: { Icon: Waveform, src: "media", label: "הקלטה" },
   note: { Icon: NotePencil, src: "brain", label: "הערה" },
 } as const;
 

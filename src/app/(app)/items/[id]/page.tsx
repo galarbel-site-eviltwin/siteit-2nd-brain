@@ -11,7 +11,7 @@ import { chunks, clients, employees, items } from "@/lib/db/schema";
 import { fmtDateTime, isoDay, msToClock } from "@/lib/format";
 import { requireEmployee } from "@/lib/session";
 
-const SOURCE = { whatsapp: "ייצוא WhatsApp", timeless: "Timeless", upload: "העלאה", manual: "הוזן ידנית" } as const;
+const SOURCE = { whatsapp: "ייצוא WhatsApp", timeless: "Timeless", upload: "העלאה", manual: "הוזן ידנית", drive: "Google Drive" } as const;
 
 export default async function ItemPage({ params }: PageProps<"/items/[id]">) {
   const me = await requireEmployee();

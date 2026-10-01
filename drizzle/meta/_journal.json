@@ -15,6 +15,20 @@
       "when": 1790840011758,
       "tag": "0001_phase1_clients_items",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790843613163,
+      "tag": "0002_drive_sync",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790843766764,
+      "tag": "0003_drive_lock",
+      "breakpoints": true
     }
   ]
 }

@@ -152,3 +152,22 @@
   .qitem { padding: 16px; }
   .chero .mono.xl { width: 64px; height: 64px; font-size: 28px; border-radius: 20px; }
 }
+
+/* drive */
+.connect { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }
+.connect > div:not(.connect-actions) { flex: 1; min-width: 260px; }
+.connect h2 { margin-bottom: 4px; }
+.connect-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.pick-list { display: grid; gap: 8px; max-width: 560px; }
+.pick { display: flex; align-items: center; gap: 12px; width: 100%; height: 54px; padding: 0 18px; border-radius: 16px; background: var(--surface-2); box-shadow: inset 0 0 0 1.5px var(--line); font-weight: 600; font-size: 16.5px; text-decoration: none; color: var(--ink); cursor: pointer; text-align: start; }
+.pick:hover { box-shadow: inset 0 0 0 2px var(--accent); }
+.pick svg { color: var(--accent); }
+.drive-card { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin: 22px 0 0; text-decoration: none; color: var(--ink); }
+.drive-card > div { flex: 1; min-width: 240px; }
+.drive-card b { font-size: 18px; display: block; }
+/* Meetings take Timeless red; recordings and images take cyan. Same meaning everywhere a source shows. */
+[data-src="meet"] { --c: #fc013e; --on: #ffffff; }
+[data-src="media"] { --c: #01b2f3; --on: #032e42; }
+[data-src="wa"] { --c: #0fd084; --on: #06331f; }
+[data-src="doc"] { --c: #fcd200; --on: #3a2f00; }
+.how-ic { width: 56px; height: 56px; }
