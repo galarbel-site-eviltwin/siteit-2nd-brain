@@ -106,6 +106,8 @@ export async function processItem(itemId: string): Promise<{ ok: true } | { ok: 
   try {
     await embedPending(500, itemId);
     await summarizeItem(itemId);
+    const { extractFacts } = await import("./extract");
+    await extractFacts(itemId);
     const [it] = await db.select({ clientId: items.clientId, assignment: items.assignment }).from(items).where(eq(items.id, itemId)).limit(1);
     if (it?.clientId && it.assignment === "confirmed") await summarizeClient(it.clientId);
     return { ok: true };

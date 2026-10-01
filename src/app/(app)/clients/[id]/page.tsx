@@ -1,5 +1,5 @@
 import { ArrowRight, Globe, PencilSimple, Phone, Plus, Tag, Trash, User } from "@phosphor-icons/react/dist/ssr";
-import { asc, desc, eq, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { addAliasAction, addContactAction, removeAliasAction, removeContactAction, summarizeClientAction } from "../../actions";
@@ -9,7 +9,9 @@ import { Dropzone } from "@/components/dropzone";
 import { KindIcon, kindLabel } from "@/components/kind-icon";
 import { SERVICES, STATUS, type Service } from "@/lib/clients";
 import { db } from "@/lib/db";
-import { clientAliases, clients, contacts, employees, events, items } from "@/lib/db/schema";
+import { clientAliases, clients, contacts, employees, events, facts, items } from "@/lib/db/schema";
+import { FactRow } from "@/components/fact-row";
+import { TRUSTED } from "@/lib/facts";
 import { ago, fmtDate, fmtDateTime } from "@/lib/format";
 import { requireEmployee } from "@/lib/session";
 
@@ -30,12 +32,17 @@ export default async function ClientSpace({ params, searchParams }: PageProps<"/
   if (!c) notFound();
   const client = c.client;
 
-  const [aliases, people, timeline, meetingRows] = await Promise.all([
+  const [aliases, people, timeline, meetingRows, factRows] = await Promise.all([
     db.select().from(clientAliases).where(eq(clientAliases.clientId, id)).orderBy(asc(clientAliases.kind)),
     db.select().from(contacts).where(eq(contacts.clientId, id)).orderBy(asc(contacts.name)),
     db.select().from(items).where(eq(items.clientId, id)).orderBy(desc(sql`coalesce(${items.occurredAt}, ${items.recordedAt})`)).limit(200),
     db.select({ id: events.id, title: events.title, startAt: events.startAt, ahead: sql<boolean>`${events.startAt} >= now()` }).from(events).where(eq(events.clientId, id)).orderBy(desc(events.startAt)).limit(60),
+    db.select({ f: facts, itemTitle: items.title }).from(facts).innerJoin(items, eq(items.id, facts.itemId))
+      .where(and(eq(facts.clientId, id), inArray(facts.status, [...TRUSTED]))).orderBy(desc(facts.occurredAt)).limit(60),
   ]);
+  const editFact = typeof sp.edit === "string" ? sp.edit : null;
+  const openCommitments = factRows.filter((r) => r.f.kind === "commitment" && !r.f.done);
+  const otherFacts = factRows.filter((r) => r.f.kind !== "commitment").slice(0, 12);
   // The same meeting sits in several people's calendars: show it once.
   const seen = new Set<string>();
   const meetings = meetingRows.filter((m) => { const k = `${m.title.trim().toLowerCase()}|${m.startAt.getTime()}`; if (seen.has(k)) return false; seen.add(k); return true; });
@@ -125,12 +132,20 @@ export default async function ClientSpace({ params, searchParams }: PageProps<"/
             {client.notes && <><h2 style={{ marginTop: 22 }}>הערות</h2><p style={{ whiteSpace: "pre-wrap" }}>{client.notes}</p></>}
           </section>
 
+          {factRows.length > 0 && (
+            <section className="card span-2">
+              <h2>החלטות, התחייבויות ומחירים</h2>
+              {openCommitments.length > 0 && <><h3 className="muted small">התחייבויות פתוחות</h3><div className="facts">{openCommitments.map(({ f, itemTitle }) => <FactRow key={f.id} f={f} itemTitle={itemTitle} editing={editFact === f.id} editHref={`/clients/${id}?edit=${f.id}`} />)}</div></>}
+              {otherFacts.length > 0 && <><h3 className="muted small" style={{ marginTop: 14 }}>החלטות, מחירים ובקשות</h3><div className="facts">{otherFacts.map(({ f, itemTitle }) => <FactRow key={f.id} f={f} itemTitle={itemTitle} editing={editFact === f.id} editHref={`/clients/${id}?edit=${f.id}`} />)}</div></>}
+            </section>
+          )}
+
           {meetings.length > 0 && (
             <section className="card span-2">
               <h2>פגישות</h2>
               <div className="grid-2 tight">
-                <div><h3 className="muted small">קרובות</h3>{upcoming.length ? upcoming.map((m) => <p key={m.id} className="meet-line"><b>{m.title}</b><span className="sub">{fmtDateTime(m.startAt)}</span></p>) : <p className="muted small">אין פגישות קרובות ביומן.</p>}</div>
-                <div><h3 className="muted small">אחרונות</h3>{past.length ? past.map((m) => <p key={m.id} className="meet-line"><b>{m.title}</b><span className="sub">{fmtDateTime(m.startAt)}</span></p>) : <p className="muted small">אין פגישות בחודשיים האחרונים.</p>}</div>
+                <div><h3 className="muted small">קרובות</h3>{upcoming.length ? upcoming.map((m) => <Link key={m.id} href={`/meetings/${m.id}`} className="meet-line"><b>{m.title}</b><span className="sub">{fmtDateTime(m.startAt)} · תדריך</span></Link>) : <p className="muted small">אין פגישות קרובות ביומן.</p>}</div>
+                <div><h3 className="muted small">אחרונות</h3>{past.length ? past.map((m) => <Link key={m.id} href={`/meetings/${m.id}`} className="meet-line"><b>{m.title}</b><span className="sub">{fmtDateTime(m.startAt)}</span></Link>) : <p className="muted small">אין פגישות בחודשיים האחרונים.</p>}</div>
               </div>
             </section>
           )}

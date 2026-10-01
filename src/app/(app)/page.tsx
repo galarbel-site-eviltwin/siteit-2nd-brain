@@ -83,8 +83,11 @@ export default async function Today() {
               {list.map(({ e, clientName }) => (
                 <div key={e.id} className="meet">
                   <span className="meet-time ltr">{e.allDay ? "כל היום" : hm.format(e.startAt)}</span>
-                  <span className="meet-body"><b>{e.title}</b><span className="sub">{clientName ? <Link href={`/clients/${e.clientId}`}>{clientName}</Link> : `${e.attendees.length} משתתפים`}</span></span>
-                  {e.link && <a className="btn btn-sm btn-ghost" href={e.link} target="_blank" rel="noreferrer"><VideoCamera size={16} />הצטרפות</a>}
+                  <span className="meet-body"><Link href={`/meetings/${e.id}`}><b>{e.title}</b></Link><span className="sub">{clientName ? <Link href={`/clients/${e.clientId}`}>{clientName}</Link> : `${e.attendees.length} משתתפים`}</span></span>
+                  <span className="meet-actions">
+                    <Link className="btn btn-sm btn-ghost" href={`/meetings/${e.id}`}>תדריך</Link>
+                    {e.link && <a className="btn btn-sm btn-ghost" href={e.link} target="_blank" rel="noreferrer"><VideoCamera size={16} />הצטרפות</a>}
+                  </span>
                 </div>
               ))}
             </div>

@@ -114,6 +114,8 @@ export const items = pgTable(
     summarizedAt: timestamp("summarized_at", { withTimezone: true }),
     // Company knowledge (procedures, price lists...) has a topic instead of a client. See lib/knowledge.
     topic: text("topic"),
+    // When decisions, commitments and prices were last pulled out of it (phase 3).
+    extractedAt: timestamp("extracted_at", { withTimezone: true }),
   },
   (t) => [index("items_client").on(t.clientId), index("items_topic").on(t.topic), index("items_hash").on(t.contentHash), index("items_recorded").on(t.recordedAt)],
 ).enableRLS();
@@ -265,4 +267,40 @@ export const notes = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index("notes_employee").on(t.employeeId, t.pinned, t.updatedAt)],
+).enableRLS();
+
+// ---------- knowledge pulled out of items (phase 3) ----------
+
+export const factKind = pgEnum("fact_kind", ["decision", "commitment", "price", "deadline", "request"]);
+// How the source supports it: said outright, reported by someone, or the brain's reading of it.
+export const evidenceKind = pgEnum("evidence_kind", ["explicit", "reported", "inferred"]);
+// auto: said outright, accepted without review (still correctable). pending: waits in the review queue.
+export const factStatus = pgEnum("fact_status", ["auto", "pending", "approved", "corrected", "rejected"]);
+
+export type FactDetails = { amount?: number | null; currency?: string | null; dueDate?: string | null; owner?: "us" | "client" | null; who?: string | null };
+export type FactRevision = { at: string; by: string; text: string; details: FactDetails; status: string };
+
+export const facts = pgTable(
+  "facts",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    clientId: uuid("client_id").references(() => clients.id, { onDelete: "cascade" }),
+    itemId: uuid("item_id").notNull().references(() => items.id, { onDelete: "cascade" }),
+    kind: factKind("kind").notNull(),
+    text: text("text").notNull(),
+    details: jsonb("details").$type<FactDetails>().notNull().default({}),
+    evidence: evidenceKind("evidence").notNull(),
+    quote: text("quote"), // the words in the source this rests on
+    seqs: integer("seqs").array().notNull().default([]),
+    status: factStatus("status").notNull().default("pending"),
+    // A commitment is open until someone marks it done.
+    done: boolean("done").notNull().default(false),
+    occurredAt: timestamp("occurred_at", { withTimezone: true }),
+    reviewedBy: text("reviewed_by"),
+    reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+    // Every correction keeps what was there before.
+    history: jsonb("history").$type<FactRevision[]>().notNull().default([]),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("facts_client").on(t.clientId, t.kind), index("facts_status").on(t.status), index("facts_item").on(t.itemId)],
 ).enableRLS();
