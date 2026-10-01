@@ -143,6 +143,7 @@ export const driveFolders = pgTable("drive_folders", {
   folderId: text("folder_id").primaryKey(),
   name: text("name").notNull(),
   rootId: text("root_id"), // which top folder it sits under; that root decides the default services
+  domain: text("domain"), // a website found in its file names; "" once looked for and none found
   status: folderStatus("status").notNull().default("pending"),
   clientId: uuid("client_id").references(() => clients.id, { onDelete: "set null" }),
   suggestedClientId: uuid("suggested_client_id").references(() => clients.id, { onDelete: "set null" }),

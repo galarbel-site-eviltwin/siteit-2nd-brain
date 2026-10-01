@@ -1,0 +1,1 @@
+ALTER TABLE "drive_folders" ADD COLUMN "domain" text;

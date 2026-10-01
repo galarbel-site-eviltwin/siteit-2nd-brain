@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 export type Suggestion = { clientId: string; reason: string } | null;
 
 // Domains that say nothing about which client a file belongs to.
-const NOISE = new Set(["gmail.com", "googlemail.com", "outlook.com", "hotmail.com", "walla.co.il", "yahoo.com", "icloud.com", "eviltwin.io", "siteit.co.il",
+export const NOISE = new Set(["gmail.com", "googlemail.com", "outlook.com", "hotmail.com", "walla.co.il", "yahoo.com", "icloud.com", "eviltwin.io", "siteit.co.il",
   "google.com", "timeless.day", "whatsapp.com", "zoom.us", "meet.google.com", "youtube.com", "facebook.com", "instagram.com", "wa.me", "linkedin.com", "vercel.app"]);
 
 export const normDomain = (s: string) => s.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/.*$/, "");
@@ -15,7 +15,7 @@ export const normPhone = (s: string) => {
 };
 export const normName = (s: string) => s.toLowerCase().replace(/["'׳״`]/g, "").replace(/\s+/g, " ").trim();
 
-const DOMAIN_RE = /\b(?:[a-z0-9-]+\.)+(?:co\.il|org\.il|net\.il|ac\.il|gov\.il|com|net|org|io|co|il|biz|info|shop|store|app|ai)\b/gi;
+export const DOMAIN_RE = /\b(?:[a-z0-9-]+\.)+(?:co\.il|org\.il|net\.il|ac\.il|gov\.il|com|net|org|io|co|il|biz|info|shop|store|app|ai)\b/gi;
 const EMAIL_RE = /[\w.+-]+@((?:[\w-]+\.)+[\w-]+)/g;
 const PHONE_RE = /(?:\+?972[-\s]?|0)(?:[2-9]|5\d)[-\s]?\d{3}[-\s]?\d{4}/g;
 

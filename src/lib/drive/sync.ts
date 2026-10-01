@@ -1,7 +1,7 @@
 import { and, eq, isNull, lt, or, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { clientAliases, clients, connections, driveFiles, driveFolders, employees, items } from "@/lib/db/schema";
-import { normName } from "@/lib/ingest/match";
+import { DOMAIN_RE, NOISE, normDomain, normName } from "@/lib/ingest/match";
 import { ingestFile, MAX_BYTES } from "@/lib/ingest/pipeline";
 import { deleteItem } from "@/lib/items";
 import { accessToken, download, FOLDER, getConnection, getRoots, isSyncable, listChildren, type DriveConfig, type DriveFile } from "./google";
@@ -26,6 +26,41 @@ async function suggestFor(name: string) {
   if (byAlias) return byAlias.id;
   const all = await db.select({ id: clients.id, name: clients.name }).from(clients);
   return all.find((c) => { const cn = normName(c.name); return cn.length >= 3 && (n.includes(cn) || cn.includes(n)); })?.id ?? null;
+}
+
+// The client's website, if its folder or the file names inside mention one ("noga-studio.co.il - report.pdf").
+// Only names are read, never contents. The most frequent domain wins.
+async function findDomain(token: string, folder: { folderId: string; name: string }, driveId?: string) {
+  const names = [folder.name, ...(await listChildren(token, folder.folderId, driveId)).map((c) => c.name)].join(" \n ").toLowerCase();
+  const tally = new Map<string, number>();
+  for (const m of names.matchAll(DOMAIN_RE)) {
+    const d = normDomain(m[0]);
+    if (!NOISE.has(d) && !/\.(pdf|docx?|xlsx?|pptx?|txt|png|jpe?g)$/.test(d)) tally.set(d, (tally.get(d) ?? 0) + 1);
+  }
+  return [...tally.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? (await guessDomain(folder.name));
+}
+
+// No domain in the files: try the English name in the folder title ("Infinidome - Google PPC" -> infinidome.com),
+// and keep it only if that site's own title carries the same name. A wrong logo is worse than a letter.
+const GENERIC = new Set(["google", "ppc", "seo", "geo", "site", "web", "website", "ltd", "inc", "the", "and", "group", "studio", "shop", "online", "digital", "marketing", "ads", "media", "israel", "app"]);
+async function guessDomain(name: string) {
+  const words = [...new Set((name.toLowerCase().match(/[a-z][a-z0-9]{2,}/g) ?? []).filter((t) => !GENERIC.has(t)))].slice(0, 3);
+  if (!words.length || words.join("").length < 4) return "";
+  // A multi-word name must match as a whole ("evil twin"), never by one of its words ("evil").
+  const joined = words.join(""), phrase = words.join(" ");
+  const bases = words.length === 1 ? [joined] : [joined, words.join("-")];
+  for (const base of bases) {
+    for (const d of [`${base}.com`, `${base}.co.il`]) {
+      try {
+        const res = await fetch(`https://${d}`, { redirect: "follow", signal: AbortSignal.timeout(5000), headers: { "user-agent": "Mozilla/5.0 SiteItBrain" } });
+        if (!res.ok) continue;
+        const html = (await res.text()).slice(0, 60_000).toLowerCase();
+        const title = (html.match(/<title[^>]*>([^<]*)/)?.[1] ?? "") + " " + (html.match(/og:site_name["']s+content=["']([^"']*)/)?.[1] ?? "");
+        if (title.includes(phrase) || title.replace(/[s-]/g, "").includes(joined)) return d;
+      } catch {}
+    }
+  }
+  return "";
 }
 
 export async function syncDrive({ budgetMs = 240_000, maxFiles = 40 } = {}): Promise<SyncResult> {
@@ -57,6 +92,14 @@ export async function syncDrive({ budgetMs = 240_000, maxFiles = 40 } = {}): Pro
           newFolders++;
         } else if (k.name !== f.name || k.rootId !== root.id) await db.update(driveFolders).set({ name: f.name, rootId: root.id }).where(eq(driveFolders.folderId, f.id));
       }
+    }
+
+    // 1b. Websites for folders not looked at yet, so the list can show real logos.
+    const unlooked = (await db.select().from(driveFolders).where(isNull(driveFolders.domain))).slice(0, 80);
+    for (const fo of unlooked) {
+      if (Date.now() - started > budgetMs / 3) break;
+      const domain = await findDomain(token, fo, folders.find((x) => x.id === fo.folderId)?.driveId).catch(() => null);
+      if (domain !== null) await db.update(driveFolders).set({ domain }).where(eq(driveFolders.folderId, fo.folderId));
     }
 
     // 2. Files in folders a person has linked to a client.

@@ -99,16 +99,23 @@ async function newClientFor(folderId: string, me: Employee) {
     await db.insert(clientAliases).values({ clientId, kind: "name", value: n }).onConflictDoNothing();
     await audit("client_created", me.email, { clientId, name: f.name, from: "drive_folder" });
   } else await addServices(clientId, await servicesFor(f.rootId));
+  await rememberDomain(clientId, f.domain);
   await db.update(driveFolders).set({ status: "mapped", clientId }).where(eq(driveFolders.folderId, folderId));
+}
+
+// A website found in the folder becomes a domain alias, so files mentioning it match this client later.
+async function rememberDomain(clientId: string, domain: string | null) {
+  if (domain) await db.insert(clientAliases).values({ clientId, kind: "domain", value: domain }).onConflictDoNothing();
 }
 
 export async function mapFolderAction(form: FormData) {
   const me = await requireEmployee();
   const folderId = str(form, "folderId"), clientId = str(form, "clientId");
   if (!clientId) redirect("/ingest/drive?error=pick");
-  const [f] = await db.select({ rootId: driveFolders.rootId }).from(driveFolders).where(eq(driveFolders.folderId, folderId)).limit(1);
+  const [f] = await db.select({ rootId: driveFolders.rootId, domain: driveFolders.domain }).from(driveFolders).where(eq(driveFolders.folderId, folderId)).limit(1);
   await db.update(driveFolders).set({ status: "mapped", clientId }).where(eq(driveFolders.folderId, folderId));
   await addServices(clientId, await servicesFor(f?.rootId ?? null));
+  await rememberDomain(clientId, f?.domain ?? null);
   await audit("drive_folder_mapped", me.email, { folderId, clientId });
   done();
 }

@@ -1,4 +1,4 @@
-import { ArrowRight, ArrowsClockwise, CaretLeft, CheckCircle, Folder, FolderSimpleDashed, LinkBreak, MapPin, Plus, Trash, WarningCircle } from "@phosphor-icons/react/dist/ssr";
+import { ArrowRight, ArrowsClockwise, Check, CheckCircle, Folder, LinkBreak, LinkSimple, Plus, Trash, WarningCircle } from "@phosphor-icons/react/dist/ssr";
 import { count, eq } from "drizzle-orm";
 import Link from "next/link";
 import {
@@ -6,6 +6,7 @@ import {
   newClientFromFolderAction, removeRootAction, resetFolderAction, setRootServiceAction, syncNowAction,
 } from "./actions";
 import { AutoSubmitSelect } from "@/components/auto-submit-select";
+import { ClientMark } from "@/components/client-mark";
 import { SelectAll } from "@/components/select-all";
 import { clientOptions } from "@/lib/clients";
 import { db } from "@/lib/db";
@@ -132,7 +133,7 @@ export default async function DrivePage({ searchParams }: PageProps<"/ingest/dri
 
           {svc && (
             <>
-              <p className="step-label"><span>2</span>איזו תיקייה?</p>
+              <p className="step-label"><span>2</span>איזו תיקייה?{place && <span className="where"><Folder size={16} />כרגע ב: {place.crumbs.map((c) => c.label).join(" / ")}</span>}</p>
               {apiError && <p className="alert">{apiError}</p>}
               {!place ? (
                 <>
@@ -152,15 +153,6 @@ export default async function DrivePage({ searchParams }: PageProps<"/ingest/dri
                 </>
               ) : (
                 <>
-                  <nav className="location" aria-label="המיקום שלך ב-Drive">
-                    <MapPin size={20} weight="fill" /><span className="here">אתה כאן:</span>
-                    {place.crumbs.map((c, i) => (
-                      <span key={c.href} className="crumb">
-                        {i > 0 && <CaretLeft size={14} />}
-                        {i === place!.crumbs.length - 1 ? <b aria-current="location">{c.label}</b> : <Link href={c.href}>{c.label}</Link>}
-                      </span>
-                    ))}
-                  </nav>
                   <p className="muted small" style={{ marginBottom: 10 }}>לחץ על תיקייה כדי להיכנס אליה, או &quot;בחירה&quot; אם בתוכה יושבות תיקיות הלקוחות.</p>
                   <div className="pick-list">
                     {place.parentId && place.parentId !== "root" && (
@@ -236,35 +228,43 @@ export default async function DrivePage({ searchParams }: PageProps<"/ingest/dri
               <p className="muted" style={{ marginBottom: 14 }}>סמן את התיקיות שהן לקוחות ולחץ &quot;פתח לקוחות למסומנות&quot;. עד שתחליט, המוח לא קורא מהן כלום.</p>
               <form id="bulk" action={bulkFoldersAction} className="bulk-bar">
                 <SelectAll formId="bulk" />
+                <span className="bulk-sep" aria-hidden="true" />
                 <button name="op" value="new" className="btn btn-sm btn-primary"><CheckCircle size={18} weight="fill" />פתח לקוחות למסומנות</button>
                 <button name="op" value="ignore" className="btn btn-sm btn-ghost">התעלם מהמסומנות</button>
               </form>
-              <div className="q">
+              <div className="ftiles">
                 {pending.map(({ f }) => {
                   const suggested = options.find((o) => o.id === f.suggestedClientId);
                   const root = rootOf(f.rootId);
+                  const id = `chk-${f.folderId}`;
                   return (
-                    <article key={f.folderId} className="card qitem folder-item">
-                      <input type="checkbox" name="folderIds" value={f.folderId} form="bulk" aria-label={`סימון ${f.name}`} className="big-check" />
-                      <div>
-                        <div className="folder-head">
-                          <span className="sq sm" data-src="doc"><FolderSimpleDashed weight="fill" size={18} /></span>
+                    <article key={f.folderId} className="ftile">
+                      <input type="checkbox" id={id} name="folderIds" value={f.folderId} form="bulk" className="ftile-check" />
+                      <label htmlFor={id} className="ftile-main">
+                        <ClientMark id={f.folderId} name={f.name} domain={f.domain} size={52} />
+                        <span className="ftile-text">
                           <b>{f.name}</b>
-                          {root && <span className="tag outline">{SERVICE_SETS[svcKey(root.services)].label}</span>}
-                        </div>
-                        {suggested && <p className="muted small">נראה כמו הלקוח הקיים <b>{suggested.name}</b>.</p>}
-                        <div className="assign-form" style={{ marginTop: 10 }}>
-                          <form action={mapFolderAction} className="assign-form">
-                            <input type="hidden" name="folderId" value={f.folderId} />
-                            <select name="clientId" defaultValue={suggested?.id ?? ""} aria-label="לקוח קיים">
-                              <option value="">קישור ללקוח קיים...</option>
-                              {options.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
-                            </select>
-                            <button className="btn btn-sm btn-ghost">קישור</button>
-                          </form>
-                          <form action={newClientFromFolderAction}><input type="hidden" name="folderId" value={f.folderId} /><button className="btn btn-sm btn-ghost">לקוח חדש</button></form>
-                          <form action={ignoreFolderAction}><input type="hidden" name="folderId" value={f.folderId} /><button className="btn btn-sm btn-ghost">להתעלם</button></form>
-                        </div>
+                          <span className="ftile-meta">
+                            {f.domain && <span className="ltr">{f.domain}</span>}
+                            {root && <span>{SERVICE_SETS[svcKey(root.services)].label}</span>}
+                          </span>
+                        </span>
+                        <span className="ftile-tick" aria-hidden="true"><Check size={16} weight="bold" /></span>
+                      </label>
+                      <div className="ftile-actions">
+                        {suggested ? (
+                          <form action={mapFolderAction}><input type="hidden" name="folderId" value={f.folderId} /><input type="hidden" name="clientId" value={suggested.id} /><button className="btn btn-xs btn-primary"><LinkSimple size={16} />קישור ל{suggested.name}</button></form>
+                        ) : (
+                          <form action={newClientFromFolderAction}><input type="hidden" name="folderId" value={f.folderId} /><button className="btn btn-xs btn-primary"><Plus size={16} weight="bold" />לקוח חדש</button></form>
+                        )}
+                        <form action={mapFolderAction} className="ftile-link">
+                          <input type="hidden" name="folderId" value={f.folderId} />
+                          <AutoSubmitSelect name="clientId" defaultValue="" aria-label={`קישור ${f.name} ללקוח קיים`}>
+                            <option value="" disabled>קישור ללקוח קיים</option>
+                            {options.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
+                          </AutoSubmitSelect>
+                        </form>
+                        <form action={ignoreFolderAction}><input type="hidden" name="folderId" value={f.folderId} /><button className="link-btn">להתעלם</button></form>
                       </div>
                     </article>
                   );
