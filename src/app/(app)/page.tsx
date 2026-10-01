@@ -1,5 +1,5 @@
 import { ArrowLeft, Buildings, CalendarBlank, CheckCircle, Circle, PlugsConnected, TrayArrowDown, VideoCamera } from "@phosphor-icons/react/dist/ssr";
-import { and, asc, count, eq, gte, lt } from "drizzle-orm";
+import { and, asc, count, eq, gte, inArray, lt } from "drizzle-orm";
 import Link from "next/link";
 import { KindIcon } from "@/components/kind-icon";
 import { pendingCount, recentItems } from "@/lib/clients";
@@ -42,13 +42,17 @@ export default async function Today() {
     recentItems(6),
   ]);
   // My meetings for the coming week, from my own connected calendar.
-  const [acc] = await db.select({ id: accounts.id }).from(accounts).where(eq(accounts.employeeId, me.id)).limit(1);
+  const mine = await db.select({ id: accounts.id }).from(accounts).where(eq(accounts.employeeId, me.id));
+  const acc = mine[0];
   const startOfToday = new Date(`${dayKey(new Date())}T00:00:00+03:00`);
-  const meetings = acc
+  const rows = acc
     ? await db.select({ e: events, clientName: clients.name }).from(events).leftJoin(clients, eq(clients.id, events.clientId))
-        .where(and(eq(events.accountId, acc.id), gte(events.startAt, startOfToday), lt(events.startAt, new Date(startOfToday.getTime() + 7 * 86400_000))))
-        .orderBy(asc(events.startAt)).limit(30)
+        .where(and(inArray(events.accountId, mine.map((a) => a.id)), gte(events.startAt, startOfToday), lt(events.startAt, new Date(startOfToday.getTime() + 7 * 86400_000))))
+        .orderBy(asc(events.startAt)).limit(60)
     : [];
+  // The same meeting in the Google and the Microsoft calendar is shown once.
+  const seenMeet = new Set<string>();
+  const meetings = rows.filter(({ e }) => { const k = `${e.title.trim().toLowerCase()}|${e.startAt.getTime()}`; if (seenMeet.has(k)) return false; seenMeet.add(k); return true; });
   const byDay = new Map<string, typeof meetings>();
   for (const m of meetings) { const k = dayName(m.e.startAt); byDay.set(k, [...(byDay.get(k) ?? []), m]); }
 
