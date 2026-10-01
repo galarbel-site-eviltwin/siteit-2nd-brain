@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { clientAliases, clients, connections, driveFiles, driveFolders } from "@/lib/db/schema";
 import { audit } from "@/lib/employees";
 import { normName } from "@/lib/ingest/match";
+import { accessToken, FOLDER, folderIdFromLink, getFolder } from "@/lib/drive/google";
 import { syncDrive } from "@/lib/drive/sync";
 import { requireEmployee } from "@/lib/session";
 
@@ -24,6 +25,22 @@ export async function chooseRootAction(form: FormData) {
   await syncDrive({ budgetMs: 40_000, maxFiles: 0 });
   done();
   redirect("/ingest/drive");
+}
+
+export async function chooseByLinkAction(form: FormData) {
+  await requireEmployee();
+  const id = folderIdFromLink(str(form, "link"));
+  if (!id) redirect("/ingest/drive?error=link");
+  let folder: Awaited<ReturnType<typeof getFolder>>;
+  try {
+    folder = await getFolder(await accessToken(), id);
+  } catch {
+    redirect("/ingest/drive?error=link_access");
+  }
+  if (folder.mimeType !== FOLDER) redirect("/ingest/drive?error=not_folder");
+  const f = new FormData();
+  f.set("driveId", folder.driveId ?? ""); f.set("rootFolderId", folder.id); f.set("rootName", folder.name);
+  await chooseRootAction(f);
 }
 
 export async function mapFolderAction(form: FormData) {

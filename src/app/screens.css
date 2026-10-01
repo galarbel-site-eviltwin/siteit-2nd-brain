@@ -172,3 +172,7 @@
 [data-src="doc"] { --c: #fcd200; --on: #3a2f00; }
 .how-ic { width: 56px; height: 56px; }
 .sq.plate { background: #fff; box-shadow: inset 0 0 0 1.5px var(--line); }
+.with-logo { display: flex; align-items: center; gap: 14px; }
+.pick-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
+.pick.chosen { background: color-mix(in srgb, var(--accent) 10%, var(--surface)); box-shadow: inset 0 0 0 2px var(--accent); }
+.pick-list { max-width: 720px; }

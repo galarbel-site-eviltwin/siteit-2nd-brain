@@ -80,6 +80,27 @@ export async function listChildren(token: string, folderId: string, driveId?: st
   return out;
 }
 
+// Folders others shared with this account (client folders often live here, not in a Shared Drive).
+export async function listSharedWithMeFolders(token: string) {
+  const r = await api<{ files: DriveFile[] }>(token, "/files", {
+    q: "sharedWithMe = true and mimeType = 'application/vnd.google-apps.folder' and trashed = false",
+    fields: "files(id, name, mimeType, modifiedTime, createdTime)", pageSize: "200", orderBy: "name",
+  });
+  return r.files ?? [];
+}
+
+export async function getFolder(token: string, id: string) {
+  return api<{ id: string; name: string; mimeType: string; driveId?: string }>(token, `/files/${id}`, { fields: "id, name, mimeType, driveId", supportsAllDrives: "true" });
+}
+
+// The id out of anything a person pastes: a folder link, a sharing link, or the bare id.
+export function folderIdFromLink(s: string) {
+  const t = s.trim();
+  const m = t.match(/\/folders\/([\w-]{10,})/) ?? t.match(/[?&]id=([\w-]{10,})/);
+  if (m) return m[1];
+  return /^[\w-]{10,}$/.test(t) ? t : null;
+}
+
 export const FOLDER = "application/vnd.google-apps.folder";
 // Google's own formats are exported to something the ingestion pipeline already reads.
 const EXPORT: Record<string, { mime: string; ext: string }> = {

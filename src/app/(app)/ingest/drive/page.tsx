@@ -1,11 +1,11 @@
 import { ArrowRight, ArrowsClockwise, CheckCircle, Folder, FolderSimpleDashed, LinkBreak, WarningCircle } from "@phosphor-icons/react/dist/ssr";
 import { count, eq } from "drizzle-orm";
 import Link from "next/link";
-import { chooseRootAction, disconnectDriveAction, ignoreFolderAction, mapFolderAction, newClientFromFolderAction, resetFolderAction, syncNowAction } from "./actions";
+import { chooseByLinkAction, chooseRootAction, disconnectDriveAction, ignoreFolderAction, mapFolderAction, newClientFromFolderAction, resetFolderAction, syncNowAction } from "./actions";
 import { clientOptions } from "@/lib/clients";
 import { db } from "@/lib/db";
 import { clients, driveFiles, driveFolders } from "@/lib/db/schema";
-import { accessToken, getConnection, listChildren, listSharedDrives, type DriveConfig } from "@/lib/drive/google";
+import { accessToken, getConnection, getFolder, listChildren, listSharedDrives, listSharedWithMeFolders, type DriveConfig } from "@/lib/drive/google";
 import { ago } from "@/lib/format";
 import { requireEmployee } from "@/lib/session";
 
@@ -17,6 +17,9 @@ const errors: Record<string, string> = {
   exchange: "משהו נכשל בחיבור. נסה שוב.",
   pick: "צריך לבחור לקוח.",
   busy: "סנכרון אחר כבר רץ. נסה שוב בעוד דקה.",
+  link: "זה לא נראה כמו קישור לתיקייה ב-Drive. פותחים את התיקייה ב-Drive ומעתיקים את הכתובת מהדפדפן.",
+  link_access: "אין לחשבון המחובר גישה לתיקייה הזו. צריך שישתפו אותה איתו.",
+  not_folder: "הקישור מוביל לקובץ, לא לתיקייה.",
 };
 
 export default async function DrivePage({ searchParams }: PageProps<"/ingest/drive">) {
@@ -26,15 +29,25 @@ export default async function DrivePage({ searchParams }: PageProps<"/ingest/dri
   const cfg = (conn?.config ?? {}) as DriveConfig;
   const err = typeof sp.error === "string" ? errors[sp.error] ?? decodeURIComponent(sp.error) : null;
 
+  // Browsing for the root folder: a Shared Drive, My Drive, or what others shared with this account.
+  const where = typeof sp.drive === "string" ? sp.drive : null; // shared drive id | "my" | "shared"
+  const inside = typeof sp.in === "string" ? sp.in : null;
   let drives: { id: string; name: string }[] = [];
   let folders: { id: string; name: string }[] = [];
+  let place: { label: string; driveId?: string; parentId?: string } | null = null;
   let apiError: string | null = null;
   if (conn && !cfg.rootFolderId) {
     try {
       const token = await accessToken();
       drives = await listSharedDrives(token);
-      const pick = typeof sp.drive === "string" ? sp.drive : null;
-      if (pick) folders = await listChildren(token, pick, pick, true);
+      if (where === "shared" && !inside) { place = { label: "משותף איתי" }; folders = await listSharedWithMeFolders(token); }
+      else if (where) {
+        const driveId = where === "my" || where === "shared" ? undefined : where;
+        const parentId = inside ?? (where === "my" ? "root" : where);
+        const label = inside ? (await getFolder(token, inside)).name : where === "my" ? "האחסון שלי" : drives.find((d) => d.id === where)?.name ?? "Drive";
+        place = { label, driveId, parentId };
+        folders = await listChildren(token, parentId, driveId, true);
+      }
     } catch (e) {
       apiError = e instanceof Error ? e.message : String(e);
     }
@@ -49,12 +62,11 @@ export default async function DrivePage({ searchParams }: PageProps<"/ingest/dri
   const mapped = mapping.filter((m) => m.f.status === "mapped");
   const ignored = mapping.filter((m) => m.f.status === "ignored");
   const last = conn?.lastResult as { added: number; updated: number; failed: number; more: boolean } | null;
-  const pickedDrive = typeof sp.drive === "string" ? drives.find((d) => d.id === sp.drive) : null;
 
   return (
     <>
       <Link href="/ingest" className="back"><ArrowRight size={20} />קליטת מידע</Link>
-      <div className="page-head"><h1>Google Drive</h1><p>המוח עוקב אחרי תיקיות הלקוחות ב-Drive המשותף, וקולט לבד כל קובץ חדש או קובץ שהשתנה. בערך כל 15 דקות.</p></div>
+      <div className="page-head"><h1 className="with-logo"><img src="/brand/icons/google-drive.svg" alt="" width={44} height={44} />Google Drive</h1><p>המוח עוקב אחרי תיקיות הלקוחות ב-Drive, וקולט לבד כל קובץ חדש או קובץ שהשתנה. בערך כל 15 דקות.</p></div>
       {err && <p className="alert" role="alert"><WarningCircle size={20} weight="fill" /> {err}</p>}
       {sp.synced && <p className="note">הסנכרון הסתיים: {String(sp.synced)} קבצים נקלטו או עודכנו{sp.more ? ". יש עוד, הם ייקלטו בסנכרון הבא" : ""}.</p>}
 
@@ -71,28 +83,41 @@ export default async function DrivePage({ searchParams }: PageProps<"/ingest/dri
         <section className="card">
           <h2>איפה נמצאות תיקיות הלקוחות?</h2>
           {apiError && <p className="alert">{apiError.includes("403") ? "אין גישה ל-Drive API. צריך להפעיל את Google Drive API בפרויקט ב-Google Cloud." : apiError}</p>}
-          {!pickedDrive ? (
+          {!place ? (
             <>
-              <p className="muted small" style={{ marginBottom: 12 }}>בחר את ה-Drive המשותף.</p>
+              <p className="muted small" style={{ marginBottom: 12 }}>הכי פשוט: פתח ב-Drive את התיקייה שבה נמצאות תיקיות הלקוחות, העתק את הכתובת מהדפדפן, והדבק כאן.</p>
+              <form action={chooseByLinkAction} className="inline-form" style={{ marginTop: 0, marginBottom: 22, maxWidth: 720 }}>
+                <label className="sr-only" htmlFor="link">קישור לתיקייה</label>
+                <input id="link" name="link" required className="ltr" placeholder="https://drive.google.com/drive/folders/..." />
+                <button className="btn btn-sm btn-primary">זו התיקייה</button>
+              </form>
+              <p className="muted small" style={{ marginBottom: 12 }}>או חפש אותה:</p>
               <div className="pick-list">
+                <Link href="/ingest/drive?drive=my" className="pick"><img src="/brand/icons/google-drive.svg" alt="" width={22} height={22} />האחסון שלי (My Drive)</Link>
+                <Link href="/ingest/drive?drive=shared" className="pick"><Folder size={22} weight="fill" />משותף איתי (Shared with me)</Link>
                 {drives.map((d) => <Link key={d.id} href={`/ingest/drive?drive=${d.id}`} className="pick"><img src="/brand/icons/google-drive.svg" alt="" width={22} height={22} />{d.name}</Link>)}
-                {!apiError && drives.length === 0 && <p className="muted">לא נמצאו Drive-ים משותפים בחשבון {conn.accountEmail}.</p>}
               </div>
             </>
           ) : (
             <>
-              <p className="muted small" style={{ marginBottom: 12 }}>ב-<b>{pickedDrive.name}</b>: באיזו תיקייה יושבות תיקיות הלקוחות? <Link href="/ingest/drive">להחלפת Drive</Link></p>
+              <p className="muted small" style={{ marginBottom: 12 }}><b>{place.label}</b>: פתח תיקייה כדי להיכנס אליה, או בחר אותה אם בתוכה יושבות תיקיות הלקוחות. <Link href="/ingest/drive">חזרה להתחלה</Link></p>
               <div className="pick-list">
-                <form action={chooseRootAction}>
-                  <input type="hidden" name="driveId" value={pickedDrive.id} /><input type="hidden" name="rootFolderId" value={pickedDrive.id} /><input type="hidden" name="rootName" value={pickedDrive.name} />
-                  <button className="pick"><Folder size={22} weight="fill" />ישירות בשורש של {pickedDrive.name}</button>
-                </form>
-                {folders.map((f) => (
-                  <form key={f.id} action={chooseRootAction}>
-                    <input type="hidden" name="driveId" value={pickedDrive.id} /><input type="hidden" name="rootFolderId" value={f.id} /><input type="hidden" name="rootName" value={`${pickedDrive.name} / ${f.name}`} />
-                    <button className="pick"><Folder size={22} />{f.name}</button>
+                {place.parentId && place.parentId !== "root" && (
+                  <form action={chooseRootAction}>
+                    <input type="hidden" name="driveId" value={place.driveId ?? ""} /><input type="hidden" name="rootFolderId" value={place.parentId} /><input type="hidden" name="rootName" value={place.label} />
+                    <button className="pick chosen"><CheckCircle size={22} weight="fill" />תיקיות הלקוחות נמצאות כאן, ב&quot;{place.label}&quot;</button>
                   </form>
+                )}
+                {folders.map((f) => (
+                  <div key={f.id} className="pick-row">
+                    <Link href={`/ingest/drive?drive=${where}&in=${f.id}`} className="pick"><Folder size={22} />{f.name}</Link>
+                    <form action={chooseRootAction}>
+                      <input type="hidden" name="driveId" value={place.driveId ?? ""} /><input type="hidden" name="rootFolderId" value={f.id} /><input type="hidden" name="rootName" value={f.name} />
+                      <button className="btn btn-sm btn-ghost">בחירה</button>
+                    </form>
+                  </div>
                 ))}
+                {folders.length === 0 && <p className="muted">אין כאן תיקיות.</p>}
               </div>
             </>
           )}
