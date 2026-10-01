@@ -44,7 +44,7 @@ export default async function Clients({ searchParams }: PageProps<"/clients">) {
           <Link key={c.id} href={`/clients/${c.id}`} className="client">
             <div className="client-top">
               <ClientMark id={c.id} name={c.name} domain={c.domain} size={54} />
-              <div><b>{c.name}</b>{c.domain && <span className="dom ltr">{c.domain}</span>}</div>
+              <div><b>{c.name}</b>{c.domain ? <span className="dom ltr">{c.domain}</span> : <span className="dom add">+ הוספת אתר</span>}</div>
             </div>
             <div className="tags">
               {(c.services as Service[]).map((s) => <span key={s} className="tag" data-src={SRC[s]}>{SERVICES[s]}</span>)}

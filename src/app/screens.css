@@ -383,3 +383,6 @@ main:has(.ask.is-started) .ask-hero-copy p { display: none; }
 .pnote p { margin: 0; white-space: pre-wrap; line-height: 1.65; color: var(--ink); }
 .pnote-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .pnote-actions { display: inline-flex; gap: 2px; }
+.client .dom.add { color: var(--accent); font-weight: 600; }
+.add-site { display: inline-flex; gap: 6px; align-items: center; }
+.add-site input { width: 250px; height: 36px; }

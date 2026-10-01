@@ -81,6 +81,7 @@ export async function addAliasAction(form: FormData) {
     throw e;
   }
   await audit("alias_added", me.email, { clientId, kind, value });
+  revalidatePath("/clients");
   revalidatePath(`/clients/${clientId}`);
 }
 

@@ -53,7 +53,14 @@ export default async function ClientSpace({ params, searchParams }: PageProps<"/
         <div>
           <h1>{client.name}</h1>
           <div className="meta">
-            {aliases.find((a) => a.kind === "domain") && <span className="ltr">{aliases.find((a) => a.kind === "domain")!.value}</span>}
+            {aliases.find((a) => a.kind === "domain") ? <span className="ltr">{aliases.find((a) => a.kind === "domain")!.value}</span> : (
+              // No site yet: one field here, so the logo, the mail and the matching all start working.
+              <form action={addAliasAction} className="add-site">
+                <input type="hidden" name="clientId" value={id} /><input type="hidden" name="kind" value="domain" />
+                <input name="value" required placeholder="האתר של הלקוח, למשל example.co.il" aria-label="האתר של הלקוח" className="ltr" />
+                <button className="btn btn-sm btn-primary">שמירה</button>
+              </form>
+            )}
             <span><User size={18} />אחראי: {c.ownerName ?? "לא נקבע"}</span>
             <span>{confirmed.length} פריטים{confirmed[0] ? `, עודכן ${ago(confirmed[0].recordedAt)}` : ""}</span>
             {client.status !== "active" && <span className="tag outline">{STATUS[client.status]}</span>}

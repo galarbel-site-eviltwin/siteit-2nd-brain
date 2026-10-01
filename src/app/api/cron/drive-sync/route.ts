@@ -1,5 +1,6 @@
 import { syncAllAccounts } from "@/lib/accounts/sync";
 import { catchUpAI } from "@/lib/ai/summarize";
+import { discoverDomains } from "@/lib/discover-domains";
 import { syncDrive } from "@/lib/drive/sync";
 
 export const maxDuration = 300;
@@ -11,6 +12,7 @@ export async function GET(req: Request) {
   if (!secret || req.headers.get("authorization") !== `Bearer ${secret}`) return new Response("Unauthorized", { status: 401 });
   const result = await syncDrive({ budgetMs: 120_000 });
   const mail = await syncAllAccounts(90_000).catch((e) => ({ error: (e as Error).message }));
+  const domains = await discoverDomains().catch(() => []);
   const ai = await catchUpAI(50_000).catch((e) => ({ error: (e as Error).message }));
-  return Response.json({ ...result, mail, ai });
+  return Response.json({ ...result, mail, domains: domains.length, ai });
 }
